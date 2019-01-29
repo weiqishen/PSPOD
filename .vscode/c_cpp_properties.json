@@ -1,0 +1,84 @@
+{
+    "configurations": [
+        {
+            "name": "WSL",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++",
+            "includePath": [
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu/c++/7",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7/backward",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/local/include",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
+                "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
+                "${workspaceFolder}/include",
+                "C:/Workstation/hdf5-1.10.4/hdf5/include"
+            ],
+            "browse": {
+                "path": [
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu/c++/7",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7/backward",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/local/include",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
+                    "C:/Users/weiqishen1994/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
+                    "${workspaceFolder}/include",
+                    "C:/Workstation/hdf5-1.10.4/hdf5/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "defines": [
+                "_MKL_BLAS"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        }
+        ,
+        {
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++",
+            "includePath": [
+                "/usr/include/c++/7",
+                "/usr/include/x86_64-linux-gnu/c++/7",
+                "/usr/include/c++/7/backward",
+                "/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                "/usr/local/include",
+                "/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include",
+                "/home/weiqishen/Documents/intel/mkl/include",
+                "${workspaceFolder}/include"
+            ],
+            "browse": {
+                "path": [
+                    "/usr/include/c++/7",
+                    "/usr/include/x86_64-linux-gnu/c++/7",
+                    "/usr/include/c++/7/backward",
+                    "/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                    "/usr/local/include",
+                    "/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                    "/usr/include/x86_64-linux-gnu",
+                    "/usr/include",
+                    "/home/weiqishen/Documents/intel/mkl/include",
+                    "${workspaceFolder}/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "defines": [
+                "_MKL_BLAS"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        }
+    ],
+    "version": 4
+}
