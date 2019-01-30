@@ -34,14 +34,14 @@ public:
    * 
    * @param list A list to specify dimension of the ndarray
    */
-  ndarray(std::initializer_list<int> list);
+  ndarray(std::initializer_list<size_t> list);
 
   /**
    * @brief 1-D constructor
    * 
    * @param nele number of element
    */
-  ndarray(int nele);
+  ndarray(size_t nele);
 
   /// Copy constructor
   ndarray(const ndarray<T> &in_array);
@@ -66,14 +66,14 @@ public:
    * 
    * @param list A list to specify dimension of the ndarray
    */
-  void setup(std::initializer_list<int> list);
+  void setup(std::initializer_list<size_t> list);
 
   /**
    * @brief setup a new 1-D ndarray object
    * 
    * @param list A list to specify dimension of the ndarray
    */
-  void setup(int nele);
+  void setup(size_t nele);
 
   ///Assignment
   ndarray<T> &operator=(const ndarray<T> &in_array);
@@ -82,25 +82,25 @@ public:
   ndarray<T> &operator=(const T &other);
 
   /// Access/set ndarray element
-  T &operator()(std::initializer_list<int> list);
+  T &operator()(std::initializer_list<size_t> list);
 
   /// 1-D access/set
-  T &operator()(int idx);
+  T &operator()(size_t idx);
 
   /// Return pointer of ndarray element
-  T *get_ptr(std::initializer_list<int> list);
+  T *get_ptr(std::initializer_list<size_t> list);
 
   /// Return pointer of ndarray element in 1-D
-  T *get_ptr(int idx = 0);
+  T *get_ptr(size_t idx = 0);
 
   /// Get number of elements along one axis
-  int get_dim(int in_dim);
+  size_t get_dim(size_t in_dim);
 
   /// Get number of dimension of the ndarray
-  int get_n_dim(void);
+  size_t get_n_dim(void);
 
   ///get the length of the ndarray
-  int get_len(void);
+  size_t get_len(void);
 
   /// Method to get maximum value of ndarray
   T get_max(void);
@@ -109,13 +109,13 @@ public:
   T get_min(void);
 
   /// Reshape the array
-  void reshape(std::initializer_list<int> list);
+  void reshape(std::initializer_list<size_t> list);
 
 protected:
-  int *shape;
+  size_t *shape;
   T *data;
-  int n_dim;
-  int len;
+  size_t n_dim;
+  size_t len;
 
 private:
   /// helper method to calculate length of ndarray
@@ -142,13 +142,13 @@ ndarray<T>::ndarray()
 // constructor 1
 
 template <typename T>
-ndarray<T>::ndarray(initializer_list<int> list)
+ndarray<T>::ndarray(initializer_list<size_t> list)
 {
   //store dimension array
   n_dim = list.size();
-  shape = new int[n_dim];
+  shape = new size_t[n_dim];
 
-  int i = 0;
+  size_t i = 0;
   for (auto l : list)
     shape[i++] = l;
 
@@ -159,11 +159,11 @@ ndarray<T>::ndarray(initializer_list<int> list)
 // constructor 2
 
 template <typename T>
-ndarray<T>::ndarray(int nele)
+ndarray<T>::ndarray(size_t nele)
 {
   //store dimension array
   n_dim = 1;
-  shape = new int[n_dim];
+  shape = new size_t[n_dim];
   shape[0] = nele;
   calc_len();
   data = new T[len];
@@ -175,7 +175,7 @@ template <typename T>
 ndarray<T>::ndarray(const ndarray<T> &in_array)
 {
   n_dim = in_array.n_dim;
-  shape = new int[n_dim];
+  shape = new size_t[n_dim];
   copy(in_array.shape, in_array.shape + n_dim, this->shape);
 
   calc_len();
@@ -199,7 +199,7 @@ ndarray<T> &ndarray<T>::operator=(const ndarray<T> &in_array)
     delete[] shape;
 
     n_dim = in_array.n_dim;
-    shape = new int[n_dim];
+    shape = new size_t[n_dim];
     copy(in_array.shape, in_array.shape + n_dim, this->shape);
 
     calc_len();
@@ -228,7 +228,7 @@ ndarray<T>::~ndarray()
 // setup
 
 template <typename T>
-void ndarray<T>::setup(initializer_list<int> list)
+void ndarray<T>::setup(initializer_list<size_t> list)
 {
   //delete previous data
   delete[] shape;
@@ -236,9 +236,9 @@ void ndarray<T>::setup(initializer_list<int> list)
 
   //store dimension array
   n_dim = list.size();
-  shape = new int[n_dim];
+  shape = new size_t[n_dim];
 
-  int i = 0;
+  size_t i = 0;
   for (auto l : list)
     shape[i++] = l;
 
@@ -248,7 +248,7 @@ void ndarray<T>::setup(initializer_list<int> list)
 
 //1-D setup
 template <typename T>
-void ndarray<T>::setup(int nele)
+void ndarray<T>::setup(size_t nele)
 {
   //delete previous data
   delete[] shape;
@@ -256,23 +256,23 @@ void ndarray<T>::setup(int nele)
 
   //store dimension array
   n_dim = 1;
-  shape = new int[n_dim];
+  shape = new size_t[n_dim];
   shape[0]=nele;
   calc_len();
   data = new T[len];
 }
 
 template <typename T>
-T &ndarray<T>::operator()(int idx)
+T &ndarray<T>::operator()(size_t idx)
 {
   return data[idx];
 }
 
 template <typename T>
-T &ndarray<T>::operator()(initializer_list<int> list)
+T &ndarray<T>::operator()(initializer_list<size_t> list)
 {
-  int idx = 0, acc = 1;
-  int i = 0;
+  size_t idx = 0, acc = 1;
+  size_t i = 0;
 
 #ifdef _DEBUG
   if (list.size() != n_dim)
@@ -295,16 +295,16 @@ T &ndarray<T>::operator()(initializer_list<int> list)
 // return pointer
 
 template <typename T>
-T *ndarray<T>::get_ptr(int idx)
+T *ndarray<T>::get_ptr(size_t idx)
 {
   return data + idx;
 }
 
 template <typename T>
-T *ndarray<T>::get_ptr(initializer_list<int> list)
+T *ndarray<T>::get_ptr(initializer_list<size_t> list)
 {
-  int idx = 0, acc = 1;
-  int i = 0;
+  size_t idx = 0, acc = 1;
+  size_t i = 0;
 
 #ifdef _DEBUG
   if (list.size() != n_dim)
@@ -327,7 +327,7 @@ T *ndarray<T>::get_ptr(initializer_list<int> list)
 // obtain dimension
 
 template <typename T>
-int ndarray<T>::get_dim(int in_dim)
+size_t ndarray<T>::get_dim(size_t in_dim)
 {
   if (in_dim < n_dim)
     return shape[in_dim];
@@ -336,7 +336,7 @@ int ndarray<T>::get_dim(int in_dim)
 }
 
 template <typename T>
-int ndarray<T>::get_n_dim()
+size_t ndarray<T>::get_n_dim()
 {
   return n_dim;
 }
@@ -345,12 +345,12 @@ template <typename T>
 void ndarray<T>::calc_len(void)
 {
   len = 1;
-  for (int i = 0; i < n_dim; i++)
+  for (size_t i = 0; i < n_dim; i++)
     len *= shape[i];
 }
 
 template <typename T>
-int ndarray<T>::get_len(void)
+size_t ndarray<T>::get_len(void)
 {
   return len;
 }
@@ -371,21 +371,21 @@ T ndarray<T>::get_min(void)
 }
 
 template <typename T>
-void ndarray<T>::reshape(initializer_list<int> list)
+void ndarray<T>::reshape(initializer_list<size_t> list)
 {
 
-  int i = 0;
+  size_t i = 0;
 
   if (n_dim != list.size())
   {
     n_dim = list.size();
     //delete shape
     delete[] shape;
-    shape=new int[n_dim];
+    shape=new size_t[n_dim];
   }
   
 #ifdef _DEBUG
-  int acc = 1;
+  size_t acc = 1;
 #endif
 
   for (auto l : list)
@@ -409,15 +409,15 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
 {
   if (s.n_dim == 1) //1-D output
   {
-    for (int i = 0; i < s.shape[0]; i++)
+    for (size_t i = 0; i < s.shape[0]; i++)
       out << setw(10) << s(i);
     out << endl;
   }
   else if (s.n_dim == 2) //2d output
   {
-    for (int i = 0; i < s.shape[0]; i++)
+    for (size_t i = 0; i < s.shape[0]; i++)
     {
-      for (int j = 0; j < s.shape[1]; j++)
+      for (size_t j = 0; j < s.shape[1]; j++)
       {
         out << setw(10) << s({i, j});
       }
@@ -426,12 +426,12 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
   }
   else if (s.n_dim == 3) //3d output
   {
-    for (int k = 0; k < s.shape[2]; k++)
+    for (size_t k = 0; k < s.shape[2]; k++)
     {
       out << "slice: (:,:," << k << ")" << endl;
-      for (int i = 0; i < s.shape[0]; i++)
+      for (size_t i = 0; i < s.shape[0]; i++)
       {
-        for (int j = 0; j < s.shape[1]; j++)
+        for (size_t j = 0; j < s.shape[1]; j++)
         {
           out << setw(10) << s({i, j, k});
         }

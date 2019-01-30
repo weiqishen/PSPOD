@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
   //read input
   run_input.setup(argv[1]);
 
-  int flag;
   clock_t t = clock();
   //start main program
   switch (run_input.task)

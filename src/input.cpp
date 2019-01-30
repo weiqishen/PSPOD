@@ -40,7 +40,7 @@ using namespace std;
 
         if (task == SPECTRAL_POD)
         {
-            pr.getScalarValue("overlap", overlap);
+            pr.getScalarValue("overlap", n_overlap);
         }
         pr.closeFile();
     }

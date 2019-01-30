@@ -19,6 +19,7 @@
 class snapshot_reader
 {
 public:
+  snapshot_reader();
   /**
      * @brief Construct a new snapshot_reader object
      * 
@@ -44,7 +45,12 @@ public:
     */
   void close_file(void);
 
-  void read_metadata(void);
+  /**
+ * @brief read attribution from snapshot dataset
+ * 
+ */
+  void read_attr(void);
+
   /**
    * @brief partial load data from snapshot file
    * 
@@ -54,17 +60,17 @@ public:
    * @param n_s number of snapshot to read
    * @param out_data data pointer to write
    */
-  void partial_load_data(int p_start, int n_p, int s_start, int n_s, double *out_data);
+  void partial_load_data(size_t p_start, size_t n_p, size_t s_start, size_t n_s, double *out_data);
 
 private:
   string file_nameS;
   hid_t file_id;
-
+  bool open_flag;
 
   //metadata
-  int dt;
-  int total_n_probe;
-  int total_n_snaps;
-  ndarray<string> fields;
+  double dt;
+  size_t total_n_probe;
+  size_t total_n_snaps;
+  ndarray<string> fields;//fields read from metadata
 
 };

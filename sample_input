@@ -1,0 +1,3 @@
+task 0 //0: classic pod;1: snapshot pod;2: spectral pod
+snap_file ./util/ctr.h5
+n_snap_read 5000

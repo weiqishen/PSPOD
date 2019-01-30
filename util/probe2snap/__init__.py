@@ -22,6 +22,7 @@ def p2s(ppath,args):
     hdata.attrs.create("num_probe", pr.num_probe, dtype="i4")
     hdata.attrs.create("dt", pr.dt, dtype=float)
     hdata.attrs.create("n_snaps", pr.n_snaps, dtype="i4")
+    hdata.attrs.create("n_fields",len(pr.fields),dtype="i4")
     hdata.attrs.create("fields", pr.fields, dtype=h5py.special_dtype(vlen=str))
     hfile.close()
     

@@ -9,11 +9,12 @@
  * 
  */
 #include "funcs.h"
-#include "hdf_rw.h"
+#include "snapshot_reader.h"
 
 void calc_classic_pod()
 {
-
+    snapshot_reader sr(run_input.snap_filename);
+    
 }
 
 void calc_snapshot_pod()

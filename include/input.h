@@ -44,16 +44,17 @@ class input
 
 
     //---------------data--------------------
+
     //Common params
-    int task;//< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
-    int snap_filename;//< snapshot file name
-    int n_snap_read;//< number of snapshot to read from 
+    int task;//!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
+    string snap_filename;//!< snapshot file name
+    size_t n_snap_read;//!< number of snapshot to read from 
     
     // Classic POD or Snapshot POD
 
 
     //Spectral POD
-    int overlap;//<number of snapshots which overlap between blocks
+    size_t n_overlap;//!<number of snapshots which overlap between blocks
 
     protected:
     std::string file_nameS;

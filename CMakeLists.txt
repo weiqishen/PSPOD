@@ -22,14 +22,22 @@ if(USE_MKL)
     set(BLAS_LD "/opt" CACHE PATH "path to mkl library")
     set(BLAS_INCLUDE "/opt" CACHE PATH "path to mkl include")
     include_directories(${BLAS_INCLUDE})
-    set(LD ${CXX_LD} ${BLAS_LD})
+    set(CXX_LD ${CXX_LD} ${BLAS_LD})
     set(CXX_LIB ${CXX_LIB} mkl_intel_lp64 mkl_sequential mkl_core pthread m dl)
 endif(USE_MKL)
-LINK_DIRECTORIES(${LD})
+
+#HDF5 library
+set(HDF5_INCLUDE "/opt" CACHE PATH "path to hdf5 include")
+set(HDF5_LD "/opt" CACHE PATH "path to hdf5 library")
+include_directories(${HDF5_INCLUDE})
+set(CXX_LD ${CXX_LD} ${HDF5_LD})
+set(CXX_LIB ${CXX_LIB} hdf5)
 
 
 #source file list
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRCLIST)
 
+#build
+LINK_DIRECTORIES(${CXX_LD})
 add_executable(PSPOD ${SRCLIST})
 target_link_libraries(PSPOD ${CXX_LIB})
