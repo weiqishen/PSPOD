@@ -1,5 +1,5 @@
 /**
- * @file hdf_rw.cpp
+ * @file snapshot_reader.cpp
  * @author Weiqi Shen (weiqishen1994@ufl.edu)
  * @brief 
  * @version 0.1
@@ -23,7 +23,6 @@ snapshot_reader::snapshot_reader(string in_filename)
     open_file();
     read_attr();
     close_file();
-    cout << fields;
 }
 
 snapshot_reader::~snapshot_reader()
@@ -143,7 +142,7 @@ void snapshot_reader::partial_load_data(size_t p_start, size_t n_p, size_t s_sta
         Fatal_Error("Failed to get hyperslab");
 
     //read from dataset
-    if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+    if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT,
                 out_data) < 0)
         Fatal_Error("Failed to read subset of data");
 

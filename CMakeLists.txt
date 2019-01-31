@@ -16,15 +16,11 @@ SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -D_DEBUG" CACHE STR
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall" CACHE STRING "Flags used by the linker during release builds" FORCE)
 
 #MKL library
-option(USE_MKL "Build with MKL support" ON)
-if(USE_MKL)
-    add_definitions(-D_MKL_BLAS)
-    set(BLAS_LD "/opt" CACHE PATH "path to mkl library")
-    set(BLAS_INCLUDE "/opt" CACHE PATH "path to mkl include")
-    include_directories(${BLAS_INCLUDE})
-    set(CXX_LD ${CXX_LD} ${BLAS_LD})
-    set(CXX_LIB ${CXX_LIB} mkl_intel_lp64 mkl_sequential mkl_core pthread m dl)
-endif(USE_MKL)
+set(MKL_LD "/opt" CACHE PATH "path to mkl library")
+set(MKL_INCLUDE "/opt" CACHE PATH "path to mkl include")
+include_directories(${MKL_INCLUDE})
+set(CXX_LD ${CXX_LD} ${MKL_LD})
+set(CXX_LIB ${CXX_LIB} mkl_intel_lp64 mkl_sequential mkl_core pthread m dl)
 
 #HDF5 library
 set(HDF5_INCLUDE "/opt" CACHE PATH "path to hdf5 include")

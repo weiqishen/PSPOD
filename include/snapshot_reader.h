@@ -62,15 +62,17 @@ public:
    */
   void partial_load_data(size_t p_start, size_t n_p, size_t s_start, size_t n_s, double *out_data);
 
+
+  //metadata
+  double dt;
+  int total_n_probe;
+  int total_n_snaps;
+  ndarray<string> fields;//fields read from metadata
 private:
   string file_nameS;
   hid_t file_id;
   bool open_flag;
 
-  //metadata
-  double dt;
-  size_t total_n_probe;
-  size_t total_n_snaps;
-  ndarray<string> fields;//fields read from metadata
+
 
 };

@@ -10,7 +10,6 @@
  */
 #include <time.h>
 #include "global.h"
-#include "ndarray.h"
 #include "funcs.h"
 
 using namespace std;

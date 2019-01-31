@@ -49,13 +49,13 @@ class input
     int task;//!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
     string snap_filename;//!< snapshot file name
     size_t n_snap_read;//!< number of snapshot to read from 
-    
+
     // Classic POD or Snapshot POD
 
 
     //Spectral POD
-    size_t n_overlap;//!<number of snapshots which overlap between blocks
-
+    size_t overlap;//!<number of snapshots which overlap between blocks
+    size_t block_size;//!< size of each block
     protected:
     std::string file_nameS;
 };

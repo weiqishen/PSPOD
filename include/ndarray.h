@@ -111,6 +111,9 @@ public:
   /// Reshape the array
   void reshape(std::initializer_list<size_t> list);
 
+  ///inplace transpose
+  void trans(void);
+
 protected:
   size_t *shape;
   T *data;
@@ -311,15 +314,11 @@ T *ndarray<T>::get_ptr(initializer_list<size_t> list)
     Fatal_Error("Invalid dimension");
 #endif
 
-        for (auto l : list)
-    {
-#ifdef _DEBUG
-      if (l >= shape[i])
-        Fatal_Error("Out of bound");
-#endif
-      idx += acc * l;
-      acc *= shape[i++];
-    }
+  for (auto l : list)
+  {
+    idx += acc * l;
+    acc *= shape[i++];
+  }
 
   return data + idx;
 }
@@ -402,6 +401,33 @@ void ndarray<T>::reshape(initializer_list<size_t> list)
 #endif
 }
 
+template <typename T>
+void ndarray<T>::trans()
+{
+  if (n_dim == 2)
+  {
+    size_t c_s = shape[0];
+    size_t r_s = shape[1];
+
+    for (size_t k = 0; k < shape[0] * shape[1]; k++) //loop over the target array
+    {
+      size_t idx = k;
+      do
+      {
+        size_t id_0t = idx % r_s;
+        size_t id_1t = idx / r_s;
+        idx = id_0t * c_s + id_1t; //idx in original array
+      } while (idx < k);
+      swap(data[k], data[idx]);
+    }
+    swap(shape[0], shape[1]);
+  }
+  else
+  {
+    Fatal_Error("ERROR: Array transpose function only accepts a 2-dimensional square ndarray");
+  }
+}
+
 //-------------friend---------------------
 //output
 template <typename U>
@@ -410,7 +436,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
   if (s.n_dim == 1) //1-D output
   {
     for (size_t i = 0; i < s.shape[0]; i++)
-      out << setw(10) << s(i);
+      out << setprecision(4) << setw(10) << s(i);
     out << endl;
   }
   else if (s.n_dim == 2) //2d output
@@ -419,7 +445,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
     {
       for (size_t j = 0; j < s.shape[1]; j++)
       {
-        out << setw(10) << s({i, j});
+        out << setprecision(4) << setw(10) << s({i, j});
       }
       out << endl;
     }
@@ -433,7 +459,7 @@ ostream &operator<<(ostream &out, ndarray<U> &s)
       {
         for (size_t j = 0; j < s.shape[1]; j++)
         {
-          out << setw(10) << s({i, j, k});
+          out << setprecision(4) << setw(10) << s({i, j, k});
         }
         out << endl;
       }
