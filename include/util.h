@@ -1,6 +1,8 @@
+#pragma once
 #include "global.h"
 #include <complex>
 #define  MKL_Complex16 std::complex<double>
+#define  MKL_Complex8 std::complex<float>
 #include "mkl.h"
 #include "ndarray.h"
 

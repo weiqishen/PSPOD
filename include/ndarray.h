@@ -277,21 +277,15 @@ T &ndarray<T>::operator()(initializer_list<size_t> list)
   size_t idx = 0, acc = 1;
   size_t i = 0;
 
-#ifdef _DEBUG
-  if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension");
-#endif
-
-        for (auto l : list)
+    for (auto l : list)
     {
-#ifdef _DEBUG
-      if (l >= shape[i])
-        Fatal_Error("Out of bound");
-#endif
       idx += acc * l;
       acc *= shape[i++];
     }
-
+#ifdef _DEBUG
+      if (idx >= len)
+        Fatal_Error("Out of bound");
+#endif
   return data[idx];
 }
 
@@ -308,11 +302,6 @@ T *ndarray<T>::get_ptr(initializer_list<size_t> list)
 {
   size_t idx = 0, acc = 1;
   size_t i = 0;
-
-#ifdef _DEBUG
-  if (list.size() != n_dim)
-    Fatal_Error("Invalid dimension");
-#endif
 
   for (auto l : list)
   {

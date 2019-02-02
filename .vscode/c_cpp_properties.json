@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "WSL",
+            "name": "Work",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/g++",
             "includePath": [
@@ -35,7 +35,6 @@
                 "databaseFilename": ""
             },
             "defines": [
-                "_MKL_BLAS"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11"
@@ -74,7 +73,46 @@
                 "databaseFilename": ""
             },
             "defines": [
-                "_MKL_BLAS"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        }
+        ,
+        {
+            "name": "Home",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++",
+            "includePath": [
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu/c++/7",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7/backward",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/local/include",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
+                "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
+                "${workspaceFolder}/include",
+                "D:/Workstation/Linux/lib/hdf5-1.10.2/hdf5/include"
+            ],
+            "browse": {
+                "path": [
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu/c++/7",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/c++/7/backward",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/local/include",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
+                    "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
+                    "${workspaceFolder}/include",
+                    "D:/Workstation/Linux/lib/hdf5-1.10.2/hdf5/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "defines": [
             ],
             "cStandard": "c11",
             "cppStandard": "c++11"
