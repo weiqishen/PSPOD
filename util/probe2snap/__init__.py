@@ -19,7 +19,7 @@ def p2s(ppath,args):
         data=pr.load_probe(i)
         hdata[:,i,:]=data
     # write attribute to the dataset
-    hdata.attrs.create("num_probe", pr.num_probe, dtype="i4")
+    hdata.attrs.create("n_probe", pr.num_probe, dtype="i4")
     hdata.attrs.create("dt", pr.dt, dtype=float)
     hdata.attrs.create("n_snaps", pr.n_snaps, dtype="i4")
     hdata.attrs.create("n_fields",len(pr.fields),dtype="i4")

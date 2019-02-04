@@ -14,7 +14,7 @@ class pod_spectral : public pod_base
 {
 public:
   pod_spectral();
-  pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_fields, size_t in_n_blocks);
+  pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks);
   ~pod_spectral();
   
   void calc_fft(size_t block_id);//!<calculate fft of real_data(time*space)

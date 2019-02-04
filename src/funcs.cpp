@@ -15,15 +15,18 @@
 #include "pod_snap.h"
 #include "pod_specteal.h"
 
+using namespace std;
+
 void calc_classic_pod()
 {
+    cout<<"Start computing Classic POD"<<endl;
     //read snapshot file info
     snapshot_reader sr(run_input.snap_filename);
     //initialize classic pod
-    pod_base pb(sr.total_n_probe, sr.total_n_snaps, sr.fields.get_len());
+    pod_base pb(run_input.total_n_probe, run_input.total_n_snap);
     //load snapshots
     sr.open_file();
-    sr.partial_load_data(0, sr.total_n_probe, 0, sr.total_n_snaps, pb.get_data_ptr()); //read snapce*time
+    sr.partial_load_data(0, run_input.total_n_probe, 0, run_input.total_n_snap, pb.get_data_ptr()); //read snapce*time
     sr.close_file();
     //calculate mean and subtract from mean
     pb.calc_mean();
@@ -36,13 +39,14 @@ void calc_classic_pod()
 
 void calc_snapshot_pod()
 {
+    cout<<"Start computing Snapshot POD"<<endl;
     //read snapshot file info
     snapshot_reader sr(run_input.snap_filename);
     //initialize snapshotpod
-    pod_snap psn(sr.total_n_probe, sr.total_n_snaps, sr.fields.get_len());
+    pod_snap psn(run_input.total_n_probe, run_input.total_n_snap);
     //load snapshots
     sr.open_file();
-    sr.partial_load_data(0, sr.total_n_probe, 0, sr.total_n_snaps, psn.get_data_ptr()); //read snapce*time
+    sr.partial_load_data(0, run_input.total_n_probe, 0, run_input.total_n_snap, psn.get_data_ptr()); //read snapce*time
     sr.close_file();
     //calculate mean and subtract from mean
     psn.calc_mean();
@@ -56,25 +60,25 @@ void calc_snapshot_pod()
 
 void calc_spectral_pod()
 {
-    size_t n_blocks, block_size_global, overlap;
-    block_size_global = run_input.block_size;
-    overlap = run_input.overlap;
-    //setup blocks
-    n_blocks = (run_input.n_snap_read - overlap) / (block_size_global - overlap); //calculate maximum number of blocks
+    size_t n_blocks;
+    cout<<"Start computing Spectral POD"<<endl;
     //read snapshot file info
     snapshot_reader sr(run_input.snap_filename);
+    //setup blocks
+    n_blocks = (run_input.total_n_snap - run_input.overlap) / (run_input.block_size - run_input.overlap); //calculate maximum number of blocks
     //initialize spectral pod
-    pod_spectral psp(sr.total_n_probe, block_size_global, sr.fields.get_len(), n_blocks);
+    pod_spectral psp(run_input.total_n_probe, run_input.block_size, n_blocks);
     //load snapshot one block at a time
     sr.open_file();
     for (size_t i = 0; i < n_blocks; i++)
     {
-        sr.partial_load_data(0, sr.total_n_probe, i * (block_size_global - overlap), block_size_global, psp.get_data_ptr());
+        sr.partial_load_data(0, run_input.total_n_probe, i * (run_input.block_size - run_input.overlap), run_input.block_size, psp.get_data_ptr());
         //calculate fft and store it in fft_data
         psp.calc_fft(i);
     }
     sr.close_file();
     //calculate modes
     psp.calc_mode();
-    
+    //write modes to hdf5
+    psp.write_results();
 }

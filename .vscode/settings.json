@@ -37,6 +37,7 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "complex": "cpp",
-        "numeric": "cpp"
+        "numeric": "cpp",
+        "filesystem": "cpp"
     }
 }

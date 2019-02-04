@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2019
  * 
  */
+#pragma once
 #include <stdio.h>
 
 #define Fatal_Error(ss)                                                \

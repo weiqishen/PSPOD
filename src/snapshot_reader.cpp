@@ -20,9 +20,16 @@ snapshot_reader::snapshot_reader(string in_filename)
         Fatal_Error("Given snapshot file not a HDF5 file");
     file_nameS = in_filename;
     open_flag = false; //set open flag to false
+    cout<<"Loading snapshot file info..."<<flush;
     open_file();
     read_attr();
     close_file();
+    cout << "done." << endl;
+    cout << endl;
+    cout << "Sampling interval: " << run_input.dt << "sec" << endl;
+    cout << "Total number of probes: " << run_input.total_n_probe << endl;
+    cout << "Total number of snapshots: " << run_input.total_n_snap << endl;
+    cout<<"Fields: "<<run_input.fields<<endl;
 }
 
 snapshot_reader::~snapshot_reader()
@@ -56,50 +63,51 @@ void snapshot_reader::close_file()
 
 void snapshot_reader::read_attr()
 {
-    hid_t data_id, dt_id, n_probe_id, n_snaps_id, fields_id, n_fields_id;
-    hid_t ftype, type;
-    int n_fields;
-    char **temp;
+    hid_t data_id, dt_id, n_probe_id, n_snap_id, fields_id, space_id;
+    hid_t str_ftype, str_type;
+    hsize_t n_fields;
+    char **temp_field;//char* array to hold field
     //open dataset
-    data_id = H5Dopen2(file_id, "snapshots", H5P_DEFAULT);
+    data_id = H5Dopen2(file_id, "/snapshots", H5P_DEFAULT);
     if (data_id < 0)
         Fatal_Error("Failed to open dataset");
 
     //open attributions
     dt_id = H5Aopen(data_id, "dt", H5P_DEFAULT);
-    n_probe_id = H5Aopen(data_id, "num_probe", H5P_DEFAULT);
-    n_snaps_id = H5Aopen(data_id, "n_snaps", H5P_DEFAULT);
-    n_fields_id = H5Aopen(data_id, "n_fields", H5P_DEFAULT);
+    n_probe_id = H5Aopen(data_id, "n_probe", H5P_DEFAULT);
+    n_snap_id = H5Aopen(data_id, "n_snaps", H5P_DEFAULT);
     fields_id = H5Aopen(data_id, "fields", H5P_DEFAULT);
 
     //create memory space for fields
-
-    ftype = H5Aget_type(fields_id);
-    type = H5Tget_native_type(ftype, H5T_DIR_ASCEND);
-    H5Aread(n_fields_id, H5T_NATIVE_INT32, &n_fields);
-    fields.setup(n_fields); //setup fields array
-    temp = new char *[n_fields];
+    space_id = H5Aget_space(fields_id);
+    H5Sget_simple_extent_dims(space_id, &n_fields, NULL);
+    run_input.fields.setup(n_fields); //setup fields array
+    temp_field = new char *[n_fields];
+    str_ftype = H5Aget_type(fields_id);
+    str_type = H5Tget_native_type(str_ftype, H5T_DIR_ASCEND);
 
     //read attributes
-    H5Aread(dt_id, H5T_NATIVE_DOUBLE, &dt);
-    H5Aread(n_probe_id, H5T_NATIVE_INT32, &total_n_probe);
-    H5Aread(n_snaps_id, H5T_NATIVE_INT32, &total_n_snaps);
-    H5Aread(fields_id, type, temp);
+    H5Aread(dt_id, H5T_NATIVE_DOUBLE, &run_input.dt);
+    H5Aread(n_probe_id, H5T_NATIVE_INT32, &run_input.total_n_probe);
+    H5Aread(n_snap_id, H5T_NATIVE_INT32, &run_input.total_n_snap);
+    H5Aread(fields_id, str_type, temp_field);
 
     //copy back to fields
     for (size_t i = 0; i < size_t(n_fields); i++)
     {
-        fields(i).assign(temp[i]);
-        delete[] temp[i];
+        run_input.fields(i).assign(temp_field[i]);
+        delete[] temp_field[i];
     }
     //close objects
-    H5Tclose(ftype);
-    H5Tclose(type);
+    H5Tclose(str_ftype);
+    H5Tclose(str_type);
+    H5Sclose(space_id);
     H5Aclose(dt_id);
     H5Aclose(n_probe_id);
-    H5Aclose(n_snaps_id);
+    H5Aclose(n_snap_id);
     H5Aclose(fields_id);
-    delete[] temp;
+    H5Dclose(data_id);
+    delete[] temp_field;
 }
 
 void snapshot_reader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, size_t n_s, double *out_data)
@@ -112,7 +120,7 @@ void snapshot_reader::partial_load_data(size_t p_start, size_t n_p, size_t s_sta
     hsize_t block[3];  //block size
 
     //set subset dataset to read
-    dimsm(0) = fields.get_len();
+    dimsm(0) = run_input.fields.get_len();
     dimsm(1) = n_p;
     dimsm(2) = n_s;
 

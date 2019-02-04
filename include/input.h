@@ -48,14 +48,21 @@ class input
     //Common params
     int task;//!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
     string snap_filename;//!< snapshot file name
-    size_t n_snap_read;//!< number of snapshot to read from 
-
+    string output_filename;//!< output file name
+    ndarray<double> d_xyz;//!< space between each probe in each direction
+    double dw;//!< integration weight, calculated from d_xyz
+    ndarray<int> np_xyz;//!< number of probes in each direction
+    ndarray<double> xyz_0;//!< position of the first probe
     // Classic POD or Snapshot POD
-
-
+    int write_mean;
     //Spectral POD
     size_t overlap;//!<number of snapshots which overlap between blocks
     size_t block_size;//!< size of each block
-    protected:
+    //meta data from snapshot files
+    double dt;
+    int total_n_probe;
+    int total_n_snap;
+    ndarray<string> fields; //fields read from metadata
+  protected:
     std::string file_nameS;
 };

@@ -1,4 +1,18 @@
+
+/**
+ * @file util.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2019-02-02
+ * 
+ * @copyright Copyright (c) 2019
+ * 
+ */
+#include "err.h"
 #include "util.h"
+
+using namespace std;
 
 ndarray<double> transpose(ndarray<double> &in_array)
 {
@@ -48,7 +62,7 @@ ndarray<MKL_Complex16> conj_transpose(ndarray<MKL_Complex16> &in_array)
 
     ndarray<MKL_Complex16> transpose{dim_1, dim_0};
     mkl_zomatcopy('C', 'C', dim_1, dim_0,
-                  MKL_Complex16(1.,0.), in_array.get_ptr(), dim_0, transpose.get_ptr(), dim_1);
+                  1., in_array.get_ptr(), dim_0, transpose.get_ptr(), dim_1);
     return transpose;
   }
   else

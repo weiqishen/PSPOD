@@ -9,6 +9,8 @@
  * @copyright Copyright (c) 2019
  * 
  */
+#pragma once
+#include "global.h"
 #include "util.h"//contain array, mkl complex definition and tool functions
 
 class pod_base
@@ -16,7 +18,7 @@ class pod_base
   public:
     //constructors/destructors
     pod_base();
-    pod_base(size_t in_n_probe, size_t in_n_snap, size_t in_n_fields);
+    pod_base(size_t in_n_probe, size_t in_n_snap);
     ~pod_base();
 
     //computational methods
