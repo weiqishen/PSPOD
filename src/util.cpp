@@ -14,6 +14,8 @@
 
 using namespace std;
 
+double pi = 4 * atan(1.);
+
 ndarray<double> transpose(ndarray<double> &in_array)
 {
   // Get dimensions of arrays

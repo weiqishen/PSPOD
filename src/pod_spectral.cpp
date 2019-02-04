@@ -21,7 +21,7 @@ pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_
     n_fields = run_input.fields.get_len();
     block_size_local = in_block_size;
     real_data.setup({block_size_local, n_probe_local * n_fields});
-    fft_data.setup({block_size_local / 2 + 1, n_probe_local * n_fields, n_realization_local});
+    fft_data.setup({block_size_local / 2 + 1, n_probe_local * n_fields, n_realization_local});//TODO: what will this be when parallel
 }
 
 pod_spectral::~pod_spectral()
@@ -30,14 +30,27 @@ pod_spectral::~pod_spectral()
 
 void pod_spectral::calc_fft(size_t block_id)
 {
+    if (run_input.window)//TODO: again if parallel what will it be
+    {
+        //create window array
+        ndarray<double> hann_array(real_data.get_dim(0));
+        for (size_t i = 0; i < hann_array.get_len(); i++)
+            hann_array(i) = hann_window(i, run_input.block_size);
+        //elementwise product
+        for (size_t i = 0; i < real_data.get_dim(1); i++)
+            vdMul(real_data.get_dim(0), real_data.get_ptr({0, i}), hann_array.get_ptr(), real_data.get_ptr({0, i}));
+    }
     //create and set descriptor
     DFTI_DESCRIPTOR_HANDLE desc_1;
-    DftiCreateDescriptor(&desc_1, DFTI_DOUBLE, DFTI_REAL, 1, block_size_local);
+    DftiCreateDescriptor(&desc_1, DFTI_DOUBLE, DFTI_REAL, 1, run_input.block_size);
     DftiSetValue(desc_1, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
     DftiSetValue(desc_1, DFTI_NUMBER_OF_TRANSFORMS, real_data.get_dim(1));
-    DftiSetValue(desc_1, DFTI_FORWARD_SCALE, 1. / block_size_local);
-    DftiSetValue(desc_1, DFTI_INPUT_DISTANCE, block_size_local);
-    DftiSetValue(desc_1, DFTI_OUTPUT_DISTANCE, block_size_local / 2 + 1);
+    if (run_input.window)
+        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt((run_input.dt * (8./3.)) / (double)(n_realization_local * run_input.block_size)));//energy correction 1.63
+    else
+        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt((run_input.dt) / (double)(n_realization_local * run_input.block_size)));
+    DftiSetValue(desc_1, DFTI_INPUT_DISTANCE, real_data.get_dim(0));
+    DftiSetValue(desc_1, DFTI_OUTPUT_DISTANCE, fft_data.get_dim(0));
     DftiSetValue(desc_1, DFTI_CONJUGATE_EVEN_STORAGE, DFTI_COMPLEX_COMPLEX);
     DftiCommitDescriptor(desc_1);
 
@@ -98,12 +111,12 @@ void pod_spectral::write_results()
     H5Awrite(attr_id, H5T_NATIVE_INT32, &n_modes_pf);
     H5Aclose(attr_id);
     //sampling interval
-    double df = 1 / (run_input.dt * run_input.block_size);
+    double df = 1. / (run_input.dt * run_input.block_size);
     attr_id = H5Acreate(of_id, "df", H5T_NATIVE_DOUBLE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(attr_id, H5T_NATIVE_DOUBLE, &df);
     H5Aclose(attr_id);
     //number of frequency components
-    int n_freq = U_spectral.get_dim(2);
+    int n_freq = run_input.block_size / 2 + 1;
     attr_id = H5Acreate(of_id, "n_freq", H5T_NATIVE_INT32, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(attr_id, H5T_NATIVE_INT32, &n_freq);
     H5Aclose(attr_id);
@@ -143,8 +156,8 @@ void pod_spectral::write_results()
     H5Tclose(datatype);
     H5Sclose(dataspace_id);
     //write modal energy
-    dim[1] = n_modes_pf;
-    dim[0] = n_freq;
+    dim[1] = D.get_dim(0);
+    dim[0] = D.get_dim(1);
     dataspace_id = H5Screate_simple(2, dim, NULL);
     dataset_id = H5Dcreate2(of_id, "/modal_energy", H5T_NATIVE_DOUBLE, dataspace_id,
                             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -154,21 +167,21 @@ void pod_spectral::write_results()
     //write modes
     dim[2] = U_spectral.get_dim(0);
     dim[1] = n_modes_pf;
-    dim[0] = n_freq;
+    dim[0] = U_spectral.get_dim(2);
     dataspace_id = H5Screate_simple(3, dim, NULL);
     U.setup(U_spectral.get_len());
     for (size_t i = 0; i < U_spectral.get_len(); i++)
         U(i) = U_spectral(i).real();
     dataset_id = H5Dcreate2(of_id, "/modes_real", H5T_NATIVE_DOUBLE, dataspace_id,
                             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, U_spectral.get_ptr());
+    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, U.get_ptr());
     H5Dclose(dataset_id);
 
     for (size_t i = 0; i < U_spectral.get_len(); i++)
         U(i) = U_spectral(i).imag();
     dataset_id = H5Dcreate2(of_id, "/modes_imag", H5T_NATIVE_DOUBLE, dataspace_id,
                             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, U_spectral.get_ptr());
+    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, U.get_ptr());
     H5Sclose(dataspace_id);
     H5Dclose(dataset_id);
     //close file

@@ -28,5 +28,4 @@ enum TASK
     DMD=3
 };
 //-------
-extern double pi;
 extern input run_input;

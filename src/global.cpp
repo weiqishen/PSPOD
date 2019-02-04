@@ -12,5 +12,4 @@
 
 using namespace std;
 
-double pi = 4 * atan(1.);
 input run_input; 

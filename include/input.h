@@ -56,6 +56,7 @@ class input
     // Classic POD or Snapshot POD
     int write_mean;
     //Spectral POD
+    int window;
     size_t overlap;//!<number of snapshots which overlap between blocks
     size_t block_size;//!< size of each block
     //meta data from snapshot files

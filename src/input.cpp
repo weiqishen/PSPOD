@@ -53,6 +53,7 @@ void input::read_param(void)
 
     if (task == SPECTRAL_POD)
     {
+        pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
     }
