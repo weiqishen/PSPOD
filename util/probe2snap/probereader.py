@@ -26,8 +26,6 @@ class ProbeReader():
 
         self.setup()
         self.get_info(args)
-        print('Number of probes:{0:d}\nSampling interval: {1} sec\nSampling fields: {2}\nNumber of snapshots: {3:d}'.format(
-            self.num_probe, self.dt, self.fields, self.n_snaps))
 
     def setup(self):
         #  get abs dir and count number of probes

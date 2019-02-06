@@ -12,10 +12,10 @@ Options:
 For more information goto https://github.com/weiqishen/HiFiLES-solver/wiki
 '''
 import sys
-import os
 from probe2snap import p2s
 from err import Fatal_Error
 import getopt
+from mpi4py import MPI
 
 def main(argv=None):
     if argv is None:
@@ -30,8 +30,9 @@ def main(argv=None):
     if not opts:
         Fatal_Error("Missing options. For help use -h, --help")
     for opt, value in opts:
-        if opt in ("-h", "--help"): # load help document
-            print(__doc__)
+        if opt in ("-h", "--help"):  # load help document
+            if MPI.COMM_WORLD.Get_rank==0:
+                print(__doc__)
             return 0
         elif opt in ("-p", "--probe"): # work mode: probe2snap
             p2s(value,args)
@@ -41,4 +42,4 @@ def main(argv=None):
 
 # execute main funtion
 if __name__ == "__main__":
-    os._exit(main())
+    sys.exit(main())

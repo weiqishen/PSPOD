@@ -1,5 +1,7 @@
-task 1 //0: classic pod;1: snapshot pod;2: spectral pod
+task 2 //0: classic pod;1: snapshot pod;2: spectral pod
 snap_file ./util/ctr.h5
-n_snap_read 5000
-overlap 250
-block_size 500
+overlap 500
+block_size 1000
+d_xyz 3 0.1 0.1 0.1
+np_xyz 3 100 100 100
+xyz_0 3 0 0 0

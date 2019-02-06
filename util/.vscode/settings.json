@@ -1,5 +1,3 @@
 {
-    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "C:\\Users\\weiqishen1994\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe"
 }
