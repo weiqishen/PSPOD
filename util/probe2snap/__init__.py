@@ -7,8 +7,8 @@ def p2s(ppath,args):
 
     # initialize MPI
     comm=MPI.COMM_WORLD
-    rank = comm.Get_rank
-    nproc=comm.Get_size
+    rank = comm.Get_rank()
+    nproc=comm.Get_size()
     # initialize probe reader object
     if rank==0:
         print("Reading probe info...")

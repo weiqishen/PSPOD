@@ -31,7 +31,7 @@ def main(argv=None):
         Fatal_Error("Missing options. For help use -h, --help")
     for opt, value in opts:
         if opt in ("-h", "--help"):  # load help document
-            if MPI.COMM_WORLD.Get_rank==0:
+            if MPI.COMM_WORLD.Get_rank()==0:
                 print(__doc__)
             return 0
         elif opt in ("-p", "--probe"): # work mode: probe2snap
