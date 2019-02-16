@@ -10,10 +10,6 @@
  */
 #include "snapshot_reader.h"
 
-snapshot_reader::snapshot_reader()
-{
-}
-
 snapshot_reader::snapshot_reader(string in_filename)
 {
     if (in_filename.compare(in_filename.size() - 2, 2, "h5"))
@@ -27,8 +23,8 @@ snapshot_reader::snapshot_reader(string in_filename)
     cout << "done." << endl;
     cout << endl;
     cout << "Sampling interval: " << run_input.dt << "sec" << endl;
-    cout << "Total number of probes: " << run_input.total_n_probe << endl;
-    cout << "Total number of snapshots: " << run_input.total_n_snap << endl;
+    cout << "Total number of probes: " << run_input.n_probe << endl;
+    cout << "Total number of snapshots: " << run_input.n_snap_global << endl;
     cout<<"Fields: "<<run_input.fields<<endl;
 }
 
@@ -88,8 +84,8 @@ void snapshot_reader::read_attr()
 
     //read attributes
     H5Aread(dt_id, H5T_NATIVE_DOUBLE, &run_input.dt);
-    H5Aread(n_probe_id, H5T_NATIVE_INT32, &run_input.total_n_probe);
-    H5Aread(n_snap_id, H5T_NATIVE_INT32, &run_input.total_n_snap);
+    H5Aread(n_probe_id, H5T_NATIVE_INT32, &run_input.n_probe);
+    H5Aread(n_snap_id, H5T_NATIVE_INT32, &run_input.n_snap_global);
     H5Aread(fields_id, str_type, temp_field);
 
     //copy back to fields
@@ -158,4 +154,45 @@ void snapshot_reader::partial_load_data(size_t p_start, size_t n_p, size_t s_sta
     H5Sclose(memspace_id);
     H5Sclose(dataspace_id);
     H5Dclose(dataset_id);
+}
+
+void snapshot_reader::read_coord()
+{
+    int n_dim;            //to varify coordinate array dimension
+    ndarray<hsize_t> dim; //coordinate array dimension
+    hid_t dataset_id, dataspace_id;
+
+    dataset_id = H5Dopen2(file_id, "/coord", H5P_DEFAULT);
+    if (dataset_id < 0)
+        Fatal_Error("Failed to open /coord");
+
+    dataspace_id = H5Dget_space(dataset_id);
+    n_dim = H5Sget_simple_extent_ndims(dataspace_id);
+    if (n_dim == 2)
+        dim.setup(2);
+    else
+        Fatal_Error("Invalid coordinate array!");
+    H5Sget_simple_extent_dims(dataspace_id, dim.get_ptr(), NULL);
+    coord.setup({(size_t)dim(1), (size_t)dim(0)}); //dimension inverse
+
+    if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, coord.get_ptr()) < 0)
+        Fatal_Error("Failed to read subset of data");
+    H5Sclose(dataspace_id);
+    H5Dclose(dataset_id);
+}
+
+void snapshot_reader::calc_weight(ndarray<double> &weight)
+{
+    weight.setup(run_input.n_probe * run_input.fields.get_len()); //probe*field
+    if (run_input.coord_type == CARTESIAN_COORD)
+    {
+        double dw = 1.;
+        for (size_t i = 0; i < run_input.d_xyz.get_len(); i++)
+            dw *= run_input.d_xyz(i);
+        weight = dw;
+    }
+    else if (run_input.coord_type == CYLINDRICAL_COORD)
+    {
+        Fatal_Error("Cylindrical coordinate weight hasn't been implemented");
+    }
 }

@@ -17,11 +17,17 @@ using namespace std;
 pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks)
 {
     n_realization_local = in_n_blocks;
-    n_probe_local = in_n_probe;
-    n_fields = run_input.fields.get_len();
     block_size_local = in_block_size;
-    real_data.setup({block_size_local, n_probe_local * n_fields});
-    fft_data.setup({block_size_local / 2 + 1, n_probe_local * n_fields, n_realization_local});//TODO: what will this be when parallel
+    real_data.setup({block_size_local, in_n_probe * run_input.fields.get_len()});
+    fft_data.setup({run_input.block_size / 2 + 1, in_n_probe * run_input.fields.get_len(), n_realization_local});
+
+    //create window array
+    if (run_input.window)
+    {
+        hann_array.setup(block_size_local);
+        for (size_t i = 0; i < block_size_local; i++)
+            hann_array(i) = hann_window(i, run_input.block_size);
+    }
 }
 
 pod_spectral::~pod_spectral()
@@ -30,15 +36,11 @@ pod_spectral::~pod_spectral()
 
 void pod_spectral::calc_fft(size_t block_id)
 {
-    if (run_input.window)//TODO: again if parallel what will it be
+    //apply window
+    if (run_input.window)
     {
-        //create window array
-        ndarray<double> hann_array(real_data.get_dim(0));
-        for (size_t i = 0; i < hann_array.get_len(); i++)
-            hann_array(i) = hann_window(i, run_input.block_size);
-        //elementwise product
         for (size_t i = 0; i < real_data.get_dim(1); i++)
-            vdMul(real_data.get_dim(0), real_data.get_ptr({0, i}), hann_array.get_ptr(), real_data.get_ptr({0, i}));
+            vdMul(block_size_local, real_data.get_ptr({0, i}), hann_array.get_ptr(), real_data.get_ptr({0, i}));
     }
     //create and set descriptor
     DFTI_DESCRIPTOR_HANDLE desc_1;
@@ -74,10 +76,18 @@ void pod_spectral::calc_mode()
         transform(fft_data.get_ptr({1, i}), fft_data.get_ptr({block_size_local - block_size_local / 2, i}),
                   fft_data.get_ptr({1, i}), [](MKL_Complex16 x) { return x * 2.; });
     }
+
+    //multiply weight
+    vdSqrt(w.get_len(), w.get_ptr(), w.get_ptr());//sqrt of weight
+    for (size_t j = 0; j < fft_data.get_dim(2); j++)
+        for (size_t i = 0; i < fft_data.get_dim(1); i++)
+            mkl_zimatcopy('C', 'N', fft_data.get_dim(0), 1, w(i), fft_data.get_ptr({0, i, j}), fft_data.get_dim(0), fft_data.get_dim(0));
+    
     //reshape fft data ->space*block*frequency
-    fft_data.reshape({block_size_local / 2 + 1, n_probe_local * n_fields * n_realization_local});
+    fft_data.reshape({block_size_local / 2 + 1, run_input.n_probe * run_input.fields.get_len() * n_realization_local});
     fft_data.trans();
-    fft_data.reshape({n_probe_local * n_fields, n_realization_local, block_size_local / 2 + 1});
+    fft_data.reshape({run_input.n_probe * run_input.fields.get_len(), n_realization_local, block_size_local / 2 + 1});
+
     //calculate svd
     U_spectral.setup({fft_data.get_dim(0), min(fft_data.get_dim(0), fft_data.get_dim(1)), fft_data.get_dim(2)});
     D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1)), fft_data.get_dim(2)});
@@ -93,7 +103,6 @@ void pod_spectral::calc_mode()
     }
     //scale singular value to modal energy
     vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
-    mkl_dimatcopy('C', 'N', D.get_dim(0), D.get_dim(1), run_input.dw, D.get_ptr(), D.get_dim(0), D.get_dim(0));
 }
 
 void pod_spectral::write_results()
@@ -122,23 +131,7 @@ void pod_spectral::write_results()
     H5Aclose(attr_id);
     //total number of probes
     attr_id = H5Acreate(of_id, "n_probe", H5T_NATIVE_INT32, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-    H5Awrite(attr_id, H5T_NATIVE_INT32, &run_input.total_n_probe);
-    H5Aclose(attr_id);
-    H5Sclose(dataspace_id);
-
-    dim[0] = run_input.xyz_0.get_len();
-    dataspace_id = H5Screate_simple(1, dim, NULL);
-    //coordinate of the first probe
-    attr_id = H5Acreate(of_id, "xyz_0", H5T_NATIVE_DOUBLE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-    H5Awrite(attr_id, H5T_NATIVE_DOUBLE, run_input.xyz_0.get_ptr());
-    H5Aclose(attr_id);
-    //number of probes in each direction
-    attr_id = H5Acreate(of_id, "np_xyz", H5T_NATIVE_INT32, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-    H5Awrite(attr_id, H5T_NATIVE_INT32, run_input.np_xyz.get_ptr());
-    H5Aclose(attr_id);
-    //seperation of probes in each direction
-    attr_id = H5Acreate(of_id, "d_xyz", H5T_NATIVE_DOUBLE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-    H5Awrite(attr_id, H5T_NATIVE_DOUBLE, run_input.d_xyz.get_ptr());
+    H5Awrite(attr_id, H5T_NATIVE_INT32, &run_input.n_probe);
     H5Aclose(attr_id);
     H5Sclose(dataspace_id);
 

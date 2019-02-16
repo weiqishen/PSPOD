@@ -19,13 +19,5 @@
 #include "err.h"
 #include "input.h"
 
-//-------------Defines---------------
-enum TASK
-{
-    CLASSIC_POD=0,
-    SNAPSHOT_POD=1,
-    SPECTRAL_POD=2,
-    DMD=3
-};
 //-------
 extern input run_input;

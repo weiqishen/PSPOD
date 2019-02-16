@@ -12,58 +12,76 @@
 #include <string>
 #include "ndarray.h"
 
+enum COORD
+{
+  CARTESIAN_COORD = 0,
+  CYLINDRICAL_COORD = 1
+};
+
+enum TASK
+{
+  CLASSIC_POD = 0,
+  SNAPSHOT_POD = 1,
+  SPECTRAL_POD = 2,
+  DMD = 3
+};
+
 class input
 {
-    public:
-    //methods
-    
-    /**
+public:
+  //methods
+
+  /**
      * @brief Construct a new input object
      * 
      */
-    input();
+  input();
 
-    /**
+  /**
      * @brief Destroy the input object
      * 
      */
-    ~input();
+  ~input();
 
-    /**
+  /**
      * @brief setup input
      * 
      * @param input_fname name of input file 
      */
-    void setup(char* input_fname);
+  void setup(char *input_fname);
 
-    /**
+  /**
      * @brief read parameters from input file
      * 
      */
-    void read_param(void);
+  void read_param(void);
 
+  //---------------data--------------------
 
-    //---------------data--------------------
+  //***Common params***
+  int task;               //!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
+  string snap_filename;   //!< snapshot file name
+  string output_filename; //!< output file name
 
-    //Common params
-    int task;//!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
-    string snap_filename;//!< snapshot file name
-    string output_filename;//!< output file name
-    ndarray<double> d_xyz;//!< space between each probe in each direction
-    double dw;//!< integration weight, calculated from d_xyz
-    ndarray<int> np_xyz;//!< number of probes in each direction
-    ndarray<double> xyz_0;//!< position of the first probe
-    // Classic POD or Snapshot POD
-    int write_mean;
-    //Spectral POD
-    int window;
-    size_t overlap;//!<number of snapshots which overlap between blocks
-    size_t block_size;//!< size of each block
-    //meta data from snapshot files
-    double dt;
-    int total_n_probe;
-    int total_n_snap;
-    ndarray<string> fields; //fields read from metadata
-  protected:
-    std::string file_nameS;
+  int coord_type; //!< type of coordinate system 0: cartesian; 1: cylindrical
+  //cartesian
+  ndarray<double> d_xyz; //!< space between each probe in each direction
+  //cylindrical
+  ndarray<double> z_axis;//!< axis of z direction in cylindrical coord
+
+  // Classic POD or Snapshot POD
+  int write_mean;
+  //Spectral POD
+  int window;
+  size_t overlap;    //!<number of snapshots which overlap between blocks
+  size_t block_size; //!< size of each block
+
+  //meta data from snapshot files
+  double dt;
+  int n_probe;
+  int n_snap_global;
+  ndarray<string> fields;
+
+protected:
+  std::string file_nameS;
 };

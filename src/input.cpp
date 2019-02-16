@@ -27,8 +27,6 @@ void input::setup(char *input_fname)
     file_nameS.assign(input_fname);
     cout<<"Reading input file..."<<flush;
     read_param();
-    if (d_xyz.get_len() != np_xyz.get_len() || np_xyz.get_len() != xyz_0.get_len())
-        Fatal_Error("Inconsistent dimension for probe point parameters")
     cout<<"done."<<endl;
 }
 
@@ -43,13 +41,19 @@ void input::read_param(void)
     if (run_input.output_filename.find(".") == string::npos)
         run_input.output_filename += ".h5";
 
-    pr.getVectorValue("d_xyz", d_xyz);
-    dw = 1.;
-    for (size_t i = 0; i < d_xyz.get_len(); i++)
-        dw *= d_xyz(i);
-
-    pr.getVectorValue("np_xyz", np_xyz);
-    pr.getVectorValue("xyz_0", xyz_0);
+    pr.getScalarValue("coord_type", coord_type, int(CARTESIAN_COORD));
+    if (coord_type == CARTESIAN_COORD)
+    {
+        pr.getVectorValue("d_xyz", d_xyz);
+    }
+    else if (coord_type == CYLINDRICAL_COORD)
+    {
+        pr.getVectorValue("axis", z_axis);
+    }
+    else
+    {
+        Fatal_Error("Coordinate system not supported!");
+    }
 
     if (task == SPECTRAL_POD)
     {

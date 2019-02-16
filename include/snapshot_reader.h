@@ -19,7 +19,6 @@
 class snapshot_reader
 {
 public:
-  snapshot_reader();
   /**
      * @brief Construct a new snapshot_reader object
      * 
@@ -52,6 +51,20 @@ public:
   void read_attr(void);
 
   /**
+   * @brief read coordinates from snapshot file. 
+   * If using cylindrical coordinate, transform to cylindrical coordinate system.
+   * 
+   */
+  void read_coord(void);
+  
+  /**
+   * @brief calculate quadrature weight
+   * 
+   * @param weight weight array to hold quadrature weight
+   */
+  void calc_weight(ndarray<double> &weight);
+
+  /**
    * @brief partial load data from snapshot file
    * 
    * @param p_start start index of probe
@@ -62,6 +75,8 @@ public:
    */
   void partial_load_data(size_t p_start, size_t n_p, size_t s_start, size_t n_s, double *out_data);
 
+  ndarray<double> coord;
+  
 private:
   //data for file reading
   string file_nameS;
