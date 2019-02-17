@@ -78,7 +78,7 @@ void calc_spectral_pod()
     //read snapshot file info
     snapshot_reader sr(run_input.snap_filename);
     //setup blocks
-    n_blocks = (run_input.n_probe - run_input.overlap) / (run_input.block_size - run_input.overlap); //calculate maximum number of blocks
+    n_blocks = (run_input.n_snap_global - run_input.overlap) / (run_input.block_size - run_input.overlap); //calculate maximum number of blocks
     //initialize spectral pod
     pod_spectral psp(run_input.n_probe, run_input.block_size, n_blocks);
     //load snapshot one block at a time

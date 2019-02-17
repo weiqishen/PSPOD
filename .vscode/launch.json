@@ -28,10 +28,10 @@
             "name": "Work Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/mnt/d/Portable Workstation/file exchange/PSPOD/bin/PSPOD",
+            "program": "/mnt/c/Workstation/PSPOD/bin/PSPOD",
             "args": ["sample_input"],
             "stopAtEntry": false,
-            "cwd": "/mnt/d/Portable Workstation/file exchange/PSPOD",
+            "cwd": "/mnt/c/Workstation/PSPOD",
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
@@ -50,7 +50,7 @@
                 "debuggerPath": "/usr/bin/gdb"
             },
             "sourceFileMap": {
-                "/mnt/d": "d:\\"
+                "/mnt/c": "c:\\"
             },
         },
         {
