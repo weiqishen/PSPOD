@@ -6,8 +6,9 @@ Features:
     2. Convert PSPOD snapshot file or PSPOD output files into visualization data
 
 Options:
-    -h, --help                    : print this help
-    -p, --probe <probe_dir>       : specify directory to the probe files and convert to snapshots 
+    -h, --help                                      : print this help
+    -p, --probe= <probe_dir>                         : specify directory to the probe files and convert to snapshots 
+    -v, --visualize= <output.h5> modes [frequency]   : specify output file by PSPOD and write visualization files
 
 For more information goto https://github.com/weiqishen/HiFiLES-solver/wiki
 '''
@@ -22,7 +23,7 @@ def main(argv=None):
         argv = sys.argv[1:]
     # parse command line options
     try:
-        opts, args = getopt.getopt(argv, "hp:", ["help", "probe="])
+        opts, args = getopt.getopt(argv, "hp:v:", ["help", "probe=","visualize="])
     except:
         Fatal_Error("for help use --help")
 
@@ -37,6 +38,8 @@ def main(argv=None):
         elif opt in ("-p", "--probe"): # work mode: probe2snap
             p2s(value,args)
             return 0
+        elif opt in ("-v","--visualize"): # work mode: visualize
+            pass
     else:
         Fatal_Error("for help use --help")
 

@@ -15,13 +15,13 @@ def p2s(ppath,args):
 
     pr = ProbeReader(ppath, args)
     if rank == 0:
-        print('Number of probes:{0:d}\nSampling interval: {1} sec\nSampling fields: {2}\nNumber of snapshots: {3:d}'.format(
-            pr.num_probe, pr.dt, pr.fields, pr.n_snaps))
+        print('Number of probes:{0:d}\nSampling interval: {1} sec\nSampling fields: {2}\nNumber of snapshots: {3:d}\nCoordinate dimension: {4:d}'.format(
+            pr.num_probe, pr.dt, pr.fields, pr.n_snaps, pr.n_dim))
 
     # create h5file and dataset
     hfile=h5py.File(pr.prefix+'.h5','w',driver='mpio',comm=comm)
     hdata=hfile.create_dataset("snapshots",shape=(len(pr.fields_id),pr.num_probe,pr.n_snaps),dtype=float) #field*probe*snap
-
+    hcoord = hfile.create_dataset("coord", shape=(pr.num_probe, pr.n_dim), dtype=float)  # probe*dim
     # load one probe file at a time and fill into slice of dataset
     if rank==0:
         print("Converting probe file...")
@@ -32,13 +32,14 @@ def p2s(ppath,args):
     if rank == nproc-1:
         n_read = n_read+pr.num_probe-nproc*n_read
     
-    #read corresponding file
+    #read and write data
     for i in range(start_id, start_id+n_read):
         if rank == 0:
             print("Progress:{0}%".format(
                 round((i+1 - start_id) * 100 / n_read, 2)), end="\r")
-        data = pr.load_probe(i)
+        data, coord = pr.load_probe(i)
         hdata[:, i, :] = data
+        hcoord[i, :] = coord
     
     # all processors write attribute to the dataset
     hdata.attrs.create("n_probe", pr.num_probe, dtype="i4")

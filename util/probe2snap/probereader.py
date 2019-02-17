@@ -9,7 +9,8 @@ Attributes:
     dt               - sampling interval
     n_snaps          - number of snapshots
     skip             - number of lines before data
-    fields_id         - index of selected fields
+    fields_id        - index of selected fields
+    n_dim            - number of coordinate dimension
 '''
 import os
 from err import Fatal_Error
@@ -48,6 +49,8 @@ class ProbeReader():
                 Fatal_Error("Can't find fields")
             else:  # there's a line
                 self.skip += 1
+                if self.skip == 3:
+                    self.n_dim = len(self.fields)
                 if self.fields[0] == "time":  # if fields
                     break
 
@@ -84,6 +87,8 @@ class ProbeReader():
     def load_probe(self, probe_id):
         fname = self.ppath+'/{0:s}_{1:06d}.dat'.format(self.prefix, probe_id)
         data = np.loadtxt(fname, skiprows=self.skip, usecols=(self.fields_id), dtype=np.float)
+        coord = np.loadtxt(fname, skiprows=2, max_rows=1, dtype=np.float)
         if data.shape[0] != self.n_snaps:
-            Fatal_Error("Number of snapshots not equal to {0:d} in {1:s}".format(self.n_snaps,fname))
-        return data.T
+            Fatal_Error("Number of snapshots not equal to {0:d} in {1:s}".format(
+                self.n_snaps, fname))
+        return data.T, coord
