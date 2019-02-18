@@ -217,6 +217,7 @@ template <typename T>
 ndarray<T> &ndarray<T>::operator=(const T &other)
 {
   fill_n(this->data, len, other);
+  return *this;
 }
 // destructor
 
