@@ -87,7 +87,7 @@ void calc_spectral_pod()
     sr.calc_weight(psp.w);
     for (size_t i = 0; i < n_blocks; i++)
     {
-        printf("Loading data ... %f %%\r", (double)(i + 1) / n_blocks * 100);
+        cout << "Loading data ... " << (double)(i + 1) / n_blocks * 100 << "\%   \r" << flush;
         sr.partial_load_data(0, run_input.n_probe, i * (run_input.block_size - run_input.overlap), run_input.block_size, psp.real_data.get_ptr());
         //calculate fft and store it in fft_data
         psp.calc_fft(i);

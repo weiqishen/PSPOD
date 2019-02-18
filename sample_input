@@ -1,7 +1,6 @@
 task 2 //0: classic pod;1: snapshot pod;2: spectral pod
-snap_file ./util/ctr.h5
-overlap 500
-block_size 1000
-d_xyz 3 0.1 0.1 0.1
-np_xyz 3 100 100 100
-xyz_0 3 0 0 0
+snap_file ./util/pod_core.h5
+overlap 128
+block_size 256
+d_xyz 3 0.00508 0.00508 0.00508
+window 1

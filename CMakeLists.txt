@@ -33,6 +33,9 @@ set(CXX_LIB ${CXX_LIB} hdf5)
 #source file list
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SRCLIST)
 
+# use C++14
+add_definitions(-std=c++14)
+
 #build
 LINK_DIRECTORIES(${CXX_LD})
 add_executable(PSPOD ${SRCLIST})
