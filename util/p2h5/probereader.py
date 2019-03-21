@@ -102,5 +102,5 @@ class ProbeReader():
             if self.rank == 0:
                 print("Number of snapshots not equal to {0:d} in {1:s}".format(
                     self.n_snaps, fname))
-                sys.exit(1)
+            sys.exit(1)
         return data.T, coord, normal, area

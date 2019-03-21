@@ -31,6 +31,7 @@ def main(argv=None):
         if MPI.COMM_WORLD.Get_rank()==0:
             print("Missing options. For help use -h, --help")
         return 1
+        
     for opt, value in opts:
         if opt in ("-h", "--help"):  # load help document
             if MPI.COMM_WORLD.Get_rank()==0:
@@ -38,10 +39,10 @@ def main(argv=None):
             return 0
         elif opt in ("-p", "--probe"): # work mode: probe2snap
             return p2h5.convert(value,args)
-    else:
-        if MPI.COMM_WORLD.Get_rank()==0:
-            print("Options not recognized. For help use h or --help")
-        return 1
+        else:
+            if MPI.COMM_WORLD.Get_rank()==0:
+                print("Options not recognized. For help use h or --help")
+            return 1
 
 # execute main funtion
 if __name__ == "__main__":
