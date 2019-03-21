@@ -31,7 +31,7 @@ def convert(ppath,args):
     hcoord = hfile.create_dataset("coord", shape=(pr.num_probe, pr.n_dim), dtype=float)  # probe*dim
     if pr.surf_flag:
         hnormal=hfile.create_dataset("normal", shape=(pr.num_probe, pr.n_dim), dtype=float)  # probe*dim
-        harea=hfile.create_dataset("area", shape=(pr.num_probe), dtype=float)  # probe
+        harea=hfile.create_dataset("area", shape=(pr.num_probe,), dtype=float)  # probe
 
     # load one probe file at a time and fill into slice of dataset
     if rank==0:
