@@ -32,11 +32,11 @@ public:
 
   //public data member
   ndarray<double> w;         //!< quadrature weight
-  ndarray<double> real_data; //time*space
+  ndarray<double> real_data; //space*time
 
 protected:
   //meta data to describe local data array (when parallel)
-  size_t n_realization_local;
+  size_t n_realization;
 
   //heavy data for pod calculation
   ndarray<double> mean_data; //space

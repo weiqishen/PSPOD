@@ -12,18 +12,11 @@
 #include <string>
 #include "ndarray.h"
 
-enum COORD
-{
-  CARTESIAN_COORD = 0,
-  CYLINDRICAL_COORD = 1
-};
-
 enum TASK
 {
   CLASSIC_POD = 0,
   SNAPSHOT_POD = 1,
   SPECTRAL_POD = 2,
-  DMD = 3
 };
 
 class input
@@ -60,27 +53,23 @@ public:
 
   //***Common params***
   int task;               //!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
-  string snap_filename;   //!< snapshot file name
+  string data_filename;   //!< data file name
   string output_filename; //!< output file name
-
-  int coord_type; //!< type of coordinate system 0: cartesian; 1: cylindrical
-  //cartesian
   ndarray<double> d_xyz; //!< space between each probe in each direction
-  //cylindrical
-  ndarray<double> z_axis;//!< axis of z direction in cylindrical coord
+  ndarray<string> fields_pod;//!< fields need to perform pod
 
   // Classic POD or Snapshot POD
-  int write_mean;
+  int write_mean;     //!< if write mean data to output
   //Spectral POD
-  int window;
+  int window;         //!<whether apply windowing before fft
   size_t overlap;    //!<number of snapshots which overlap between blocks
   size_t block_size; //!< size of each block
 
   //meta data from snapshot files
-  double dt;
-  int n_probe;
-  int n_snap_global;
-  ndarray<string> fields;
+  double dt; //!<time step size
+  int n_probe_global; //!< total number of probes
+  int n_snap_global;  //!< total number of snapshots
+  ndarray<string> fields_data; //!<fields in data file
 
 protected:
   std::string file_nameS;

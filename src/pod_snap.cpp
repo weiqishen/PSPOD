@@ -23,13 +23,11 @@ pod_snap::~pod_snap()
 
 void pod_snap::calc_mode()
 {
-    //transpose real_data array
-    real_data.trans(); //(time*space)->(sapce*time)
     //square root of weight
     vdSqrt(w.get_len(), w.get_ptr(), w.get_ptr());
-    //multiply weight
-    for (size_t i = 0; i < real_data.get_dim(1); i++)
-        vdMul(real_data.get_dim(0), real_data.get_ptr({0, i}), w.get_ptr(), real_data.get_ptr({0, i}));
+    //multiply weight(probe*field)
+    //for catesian coord multiply const
+    cblas_dscal(real_data.get_len(), w(0), real_data.get_ptr(), 1);
     U.setup({real_data.get_dim(0), min(real_data.get_dim(0),real_data.get_dim(1))});
     D.setup(min(real_data.get_dim(0),real_data.get_dim(1)));
     //declare dummy array
@@ -38,7 +36,7 @@ void pod_snap::calc_mode()
     //compute svd
     LAPACKE_dgesvd(LAPACK_COL_MAJOR, 'S', 'N', real_data.get_dim(0),  real_data.get_dim(1),
                    real_data.get_ptr(), real_data.get_dim(0), D.get_ptr(), U.get_ptr(),
-                   U.get_dim(0), vt_dumm.get_ptr(), real_data.get_dim(1), superb.get_ptr());
+                   U.get_dim(0), vt_dumm.get_ptr(), U.get_dim(1), superb.get_ptr());
     //rescale singlular value to be correct eigenvalue
     vdSqr(D.get_len(),D.get_ptr(),D.get_ptr());
 }

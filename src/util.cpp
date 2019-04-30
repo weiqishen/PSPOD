@@ -104,3 +104,9 @@ ndarray<double> multi_2darray(ndarray<double> &M1, ndarray<double> &M2)
     Fatal_Error("ERROR: Array multiplication function can only multiply 2-dimensional arrays together");
   }
 }
+
+void hann_window(ndarray<double> &out_hann)
+{
+  for (size_t i = 0; i < out_hann.get_len(); i++)
+    out_hann(i) = 0.5 * (1. - cos(2 * pi * i / (double)(out_hann.get_len() - 1)));
+}

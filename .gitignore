@@ -152,3 +152,4 @@ dmypy.json
 
 cmake*
 *.h5
+.vscode/

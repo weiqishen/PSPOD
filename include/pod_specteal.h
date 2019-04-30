@@ -24,9 +24,10 @@ public:
 
 protected:
   //meta data to describe local data array
-  size_t block_size_local;
+  size_t block_size;
   //heavy data for pod calculation
   ndarray<double> hann_array;//!< hann window array
+  double hann_sqr;
   ndarray<MKL_Complex16> fft_data;//!<(frequency*space*block)->(space*block*frequency)
   ndarray<MKL_Complex16> U_spectral;//spectral POD modes
 };

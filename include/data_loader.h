@@ -1,5 +1,5 @@
 /**
- * @file snapshot_reader.h
+ * @file data_loader.h
  * @author Weiqi Shen (weiqishen1994@ufl.edu)
  * @brief 
  * @version 0.1
@@ -12,25 +12,26 @@
 #include "global.h"
 #include "hdf5.h"
 #include "ndarray.h"
+#include <vector>
 /**
  * @brief snapshot file reader
- * @class snapshot_reader
+ * @class data_loader
  */
-class snapshot_reader
+class data_loader
 {
 public:
   /**
-     * @brief Construct a new snapshot_reader object
+     * @brief Construct a new data_loader object
      * 
      * @param in_fname name of snapshot file
      */
-  snapshot_reader(string in_fname);
+  data_loader(string in_fname);
 
   /**
     * @brief Destroy the snapshot object
     * 
     */
-  ~snapshot_reader();
+  ~data_loader();
 
   /**
  * @brief Open snapshot file
@@ -82,7 +83,5 @@ private:
   string file_nameS;
   hid_t file_id;
   bool open_flag;
-
-
-
+  vector<size_t> field_data_id;
 };
