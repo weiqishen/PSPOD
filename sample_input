@@ -1,5 +1,7 @@
 task 2 //0: classic pod;1: snapshot pod;2: spectral pod
-snap_file ./util/pod_core.h5
+data_file ../Remote/smc000/data/pod_core.h5
+output_file pod_result.h5
+fields 1 pressure
 overlap 128
 block_size 256
 d_xyz 3 0.00508 0.00508 0.00508
