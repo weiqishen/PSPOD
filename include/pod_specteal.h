@@ -19,15 +19,17 @@ public:
   
   void calc_fft(size_t block_id);//!<calculate fft of real_data(time*space)
   void calc_mode();//!<calculate mode from fft_data using svd(fft_data)
-
-  void write_results();//!<write modal energy, modes, etc. to hdf5 file
-
+  void dump_fft(size_t block_id);
+  void load_fft(size_t freq_id);
+  void create_result();//write attributions to result file
+  void write_mode(size_t freq_id);//!<write modes to file
+  void write_energy();//!<write modal energy
 protected:
   //meta data to describe local data array
   size_t block_size;
   //heavy data for pod calculation
   ndarray<double> hann_array;//!< hann window array
   double hann_sqr;
-  ndarray<MKL_Complex16> fft_data;//!<(frequency*space*block)->(space*block*frequency)
+  ndarray<MKL_Complex16> fft_data;//!<(frequency*space)
   ndarray<MKL_Complex16> U_spectral;//spectral POD modes
 };

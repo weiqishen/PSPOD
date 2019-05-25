@@ -85,22 +85,23 @@ void calc_spectral_pod()
     sr.open_file();
     sr.read_coord();
     sr.calc_weight(psp.w);
-    for (size_t i = 0; i < n_blocks; i++)
+    if (!run_input.from_dump)
     {
-        cout << "Loading data... block " << i+1 <<" of "<< n_blocks <<"  \r"<< flush;
-        sr.partial_load_data(0, run_input.n_probe_global, i * (run_input.block_size - run_input.overlap), run_input.block_size, psp.real_data.get_ptr());
-        //calculate fft and store it in fft_data
-        psp.calc_fft(i);
+        for (size_t i = 0; i < n_blocks; i++)
+        {
+            cout << "Loading data... block " << i + 1 << " of " << n_blocks << "  \r" << flush;
+            sr.partial_load_data(0, run_input.n_probe_global, i * (run_input.block_size - run_input.overlap), run_input.block_size, psp.real_data.get_ptr());
+            //calculate fft and store it in fft_data
+            psp.calc_fft(i);
+        }
     }
     sr.close_file();
     cout << endl;
     //calculate modes
-    cout << "calulating modes ... " << flush;
     psp.calc_mode();
     cout << "done." << endl;
     //write modes to hdf5
     cout << "Writing data to " << run_input.output_filename << " ... " << flush;
-    psp.write_results();
     psp.write_coord(sr.coord);
     cout << "done." << endl;
 }

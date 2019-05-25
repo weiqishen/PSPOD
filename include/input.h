@@ -64,6 +64,7 @@ public:
   int window;         //!<whether apply windowing before fft
   size_t overlap;    //!<number of snapshots which overlap between blocks
   size_t block_size; //!< size of each block
+  int from_dump;
 
   //meta data from snapshot files
   double dt; //!<time step size

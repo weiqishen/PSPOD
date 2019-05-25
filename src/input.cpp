@@ -49,6 +49,7 @@ void input::read_param(void)
         pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
+        pr.getScalarValue("from_dump",from_dump,0);
     }
     else
     {
