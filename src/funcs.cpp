@@ -85,7 +85,7 @@ void calc_spectral_pod()
     sr.open_file();
     sr.read_coord();
     sr.calc_weight(psp.w);
-    if (!run_input.from_dump)
+    if (!run_input.from_dump)//calculate fft
     {
         for (size_t i = 0; i < n_blocks; i++)
         {

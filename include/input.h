@@ -19,6 +19,12 @@ enum TASK
   SPECTRAL_POD = 2,
 };
 
+enum COORD_SYS
+{
+   CARTESIAN = 0,
+   CYLINDRICAL = 1,
+};
+
 class input
 {
 public:
@@ -56,15 +62,15 @@ public:
   string data_filename;   //!< data file name
   string output_filename; //!< output file name
   ndarray<double> d_xyz; //!< space between each probe in each direction
-  ndarray<string> fields_pod;//!< fields need to perform pod
-
+  ndarray<string> fields_pod; //!< fields need to perform pod
+  int coord_sys; //!< coordinated system 0: cartesian; 1: cylindrical
   // Classic POD or Snapshot POD
   int write_mean;     //!< if write mean data to output
   //Spectral POD
-  int window;         //!<whether apply windowing before fft
-  size_t overlap;    //!<number of snapshots which overlap between blocks
+  int window;         //!< whether apply windowing before fft
+  size_t overlap;    //!< number of snapshots which overlap between blocks
   size_t block_size; //!< size of each block
-  int from_dump;
+  int from_dump; //!< if load fft data from dumped temp file
 
   //meta data from snapshot files
   double dt; //!<time step size

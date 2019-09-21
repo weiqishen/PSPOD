@@ -48,17 +48,25 @@ void pod_base::calc_mode()
 {
     //setup eigenvector and eigenvalue arrays
     U.setup({real_data.get_dim(0), real_data.get_dim(0)});
-    U = 0.;                        //initialize to 0.
     D.setup(real_data.get_dim(0)); //space
 
-    //do matrix multiplication
+    //multiply sqrt(w) matrix
+    if (run_input.coord_sys == CARTESIAN) //scale uniformly
+        cblas_dscal(real_data.get_len(), sqrt(w(0)), real_data.get_ptr(), 1);
+    else if (run_input.coord_sys == CYLINDRICAL)
+    {
+        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                                                            //loop over each field
+            for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)                                                                      //loop over each probe
+                cblas_dscal(real_data.get_dim(1), sqrt(w(i)), real_data.get_ptr({i + j * run_input.n_probe_global, 0}), real_data.get_dim(0)); //rescale each row
+    }
+    //S=Q*Q^T
     cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, real_data.get_dim(0), real_data.get_dim(0), real_data.get_dim(1), 1.0,
                 real_data.get_ptr(), real_data.get_dim(0), real_data.get_ptr(), real_data.get_dim(1), 0.,
-                U.get_ptr(), real_data.get_dim(0)); //S=Q*Q^T
-
-    //multiply weight(probe*field)
-    //for catesian coord multiply const
-    cblas_dscal(U.get_len(), w(0), U.get_ptr(), 1);
+                U.get_ptr(), real_data.get_dim(0)); 
+    //release memory
+    real_data.setup(1);
+    //scale by 1/n_realization
+    cblas_dscal(U.get_len(), 1. / n_realization, U.get_ptr(), 1);
 
     //delete upper triangular elements
     for (size_t i = 0; i < U.get_dim(1); i++) //loop over row
@@ -67,6 +75,16 @@ void pod_base::calc_mode()
 
     //compute eigenvalue decomposition
     LAPACKE_dsyevd(LAPACK_COL_MAJOR, 'V', 'L', U.get_dim(0), U.get_ptr(), U.get_dim(0), D.get_ptr());
+
+    //multiply 1/sqrt(w) matrix
+    if (run_input.coord_sys == CARTESIAN) //scale uniformly
+        cblas_dscal(U.get_len(), 1. / sqrt(w(0)), U.get_ptr(), 1);
+    else if (run_input.coord_sys == CYLINDRICAL)
+    {
+        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                                         //loop over each field
+            for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)                                                   //loop over each probe
+                cblas_dscal(U.get_dim(1), 1. / sqrt(w(i)), U.get_ptr({i + j * run_input.n_probe_global, 0}), U.get_dim(0)); //rescale each row
+    }
 }
 
 void pod_base::write_results()

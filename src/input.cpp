@@ -42,14 +42,20 @@ void input::read_param(void)
     if (run_input.output_filename.find(".") == string::npos)
         run_input.output_filename += ".h5";
     pr.getVectorValue("fields", fields_pod);
-    pr.getVectorValue("d_xyz", d_xyz);
+    pr.getScalarValue("coord_sys",coord_sys,int(CARTESIAN));
+    if (run_input.coord_sys == CARTESIAN)
+        pr.getVectorValue("d_xyz", d_xyz);
+    else if (run_input.coord_sys == CYLINDRICAL)
+        pr.getVectorValue("d_rtz", d_xyz);
+    else
+        Fatal_Error("Unsupported coordinate system");
 
     if (task == SPECTRAL_POD)
     {
         pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
-        pr.getScalarValue("from_dump",from_dump,0);
+        pr.getScalarValue("from_dump", from_dump, 0);
     }
     else
     {

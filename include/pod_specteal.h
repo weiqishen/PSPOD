@@ -31,5 +31,6 @@ protected:
   ndarray<double> hann_array;//!< hann window array
   double hann_sqr;
   ndarray<MKL_Complex16> fft_data;//!<(frequency*space)
-  ndarray<MKL_Complex16> U_spectral;//spectral POD modes
+  ndarray<MKL_Complex16> U_spectral;//!<spectral POD modes
+  ndarray<double> fft_comp;//!<temp array to load fft data
 };

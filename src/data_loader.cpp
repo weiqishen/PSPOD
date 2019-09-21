@@ -96,12 +96,24 @@ void data_loader::read_attr()
     delete[] temp_field;
 
     //set id of fields to read
-    for (size_t i = 0; i < run_input.fields_data.get_len(); i++)
-        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)
-            if (run_input.fields_data(i) == run_input.fields_pod(j))
-                field_data_id.push_back(i);
+    for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over the pod fields
+    {
+        for (size_t j = 0; j < run_input.fields_data.get_len(); j++) //loop over the data fields
+        {
+            if (run_input.fields_pod(i) == run_input.fields_data(j)) //found in the data file
+            {
+                field_data_id.push_back(j);
+                break;
+            }
+            else
+            {
+                if (j == run_input.fields_data.get_len() - 1)
+                    Fatal_Error("Can't find the POD field in the data file!");
+            }
+        }
+    }
     if (!is_sorted(field_data_id.begin(), field_data_id.end()))
-        Fatal_Error("field for POD should in the same order of field in data file!");
+        Fatal_Error("Field for POD should in the same order of field in data file!");
 
     //open dataset and read dimensions
     data_id = H5Dopen2(file_id, "data", H5P_DEFAULT);
@@ -187,9 +199,27 @@ void data_loader::read_coord()
 
 void data_loader::calc_weight(ndarray<double> &weight)
 {
-    weight.setup(1); //1
     double dw = 1.;
+
+    //calculate product of increment
     for (size_t i = 0; i < run_input.d_xyz.get_len(); i++)
         dw *= run_input.d_xyz(i);
-    weight = dw;
+        
+    if (run_input.coord_sys == CARTESIAN)//only one number is needed
+    {
+        weight.setup(1),
+        weight = dw;
+    }
+    else if (run_input.coord_sys == CYLINDRICAL)//one weight for each probe
+    {
+        weight.setup(run_input.n_probe_global); //total number of probe points
+        for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)
+        {
+            weight(i) = dw * coord({0, i}); //rdrdthetadz
+        }
+    }
+    else
+    {
+        Fatal_Error("Unsupported coordinate system!")
+    }
 }
