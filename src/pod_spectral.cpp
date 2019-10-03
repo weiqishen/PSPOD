@@ -118,7 +118,7 @@ void pod_spectral::calc_mode()
                        fft_data.get_ptr(), fft_data.get_dim(0), D.get_ptr({0, i}), U_spectral.get_ptr(),
                        U_spectral.get_dim(0), vt_dumm.get_ptr(), U_spectral.get_dim(1), superb.get_ptr());
         // calc coefficient X^T*U
-        MKL_Complex16 alpha(1, 0);
+        MKL_Complex16 alpha(sqrt(n_realization), 0);
         MKL_Complex16 beta(0, 0);
         cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, fft_data.get_dim(1), U_spectral.get_dim(1), fft_data.get_dim(0), &alpha, fft_data.get_ptr(), fft_data.get_dim(0), U_spectral.get_ptr(), U_spectral.get_dim(0), &beta, a_spectral.get_ptr(), a_spectral.get_dim(0));
         //multiply 1/sqrt(w) matrix
