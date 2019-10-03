@@ -61,8 +61,8 @@ void pod_base::calc_mode()
     }
     //S=Q*Q^T
     cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, real_data.get_dim(0), real_data.get_dim(0), real_data.get_dim(1), 1.0,
-                real_data.get_ptr(), real_data.get_dim(0), real_data.get_ptr(), real_data.get_dim(1), 0.,
-                U.get_ptr(), real_data.get_dim(0)); 
+                real_data.get_ptr(), real_data.get_dim(0), real_data.get_ptr(), real_data.get_dim(0), 0.,
+                U.get_ptr(), U.get_dim(0)); 
     //release memory
     real_data.setup(1);
     //scale by 1/n_realization

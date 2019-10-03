@@ -24,6 +24,7 @@ public:
   void create_result();//write attributions to result file
   void write_mode(size_t freq_id);//!<write modes to file
   void write_energy();//!<write modal energy
+  void write_coeff(size_t freq_id);//!<write modal coefficients
 protected:
   //meta data to describe local data array
   size_t block_size;
@@ -32,5 +33,6 @@ protected:
   double hann_sqr;
   ndarray<MKL_Complex16> fft_data;//!<(frequency*space)
   ndarray<MKL_Complex16> U_spectral;//!<spectral POD modes
+  ndarray<MKL_Complex16> a_spectral;//!<(block*block)
   ndarray<double> fft_comp;//!<temp array to load fft data
 };

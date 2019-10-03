@@ -25,7 +25,7 @@ public:
   virtual void calc_mode(); //!<calculate mode from real_data using evd(real_data'*real_data)
   void calc_mean();         //!<calculate mean of real_data along axis=0
   void subtract_mean();     //!<subtract mean from real_data along axis=0
-
+  
   //output methods
   virtual void write_results(); //!<write modal energy, modes, etc. to hdf5 file
   void write_coord(ndarray<double> &in_coord); //!< write coordinates to hdf5 file
@@ -41,5 +41,5 @@ protected:
   //heavy data for pod calculation
   ndarray<double> mean_data; //space
   ndarray<double> U, D;      //!<POD modes(space*n), modal energy(n)
-  ndarray<double> a;         //!<temporal coefficient(time*n)
+  ndarray<double> a;         //!<modal coefficient(time*time)
 };
