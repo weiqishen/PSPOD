@@ -88,6 +88,7 @@ void pod_spectral::calc_mode()
 
     fft_data.setup({run_input.n_probe_global* run_input.fields_pod.get_len(), n_realization}); //space*block
     fft_comp.setup({fft_data.get_dim(0), fft_data.get_dim(1)}); //same as fft_data to load fft_data from file
+    ndarray<MKL_Complex16> fft_temp;                            //temp array for coeff calculation in case fft_data is destroyed
     U_spectral.setup({fft_data.get_dim(0), min(fft_data.get_dim(0), fft_data.get_dim(1))});//space*block
     U.setup({U_spectral.get_dim(0),U_spectral.get_dim(1)});//same as U_spectral to write U_Spectral to file
     D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1)), block_size / 2 + 1});//block*freq
@@ -114,13 +115,14 @@ void pod_spectral::calc_mode()
                     cblas_zdscal(fft_data.get_dim(1), sqrt(w(i)), fft_data.get_ptr({i + j * run_input.n_probe_global, 0}), fft_data.get_dim(0)); //rescale each row
         }
         //calc svd
+        fft_temp = fft_data; //copy to temporary storage
         LAPACKE_zgesvd(LAPACK_COL_MAJOR, 'S', 'N', fft_data.get_dim(0), fft_data.get_dim(1),
                        fft_data.get_ptr(), fft_data.get_dim(0), D.get_ptr({0, i}), U_spectral.get_ptr(),
                        U_spectral.get_dim(0), vt_dumm.get_ptr(), U_spectral.get_dim(1), superb.get_ptr());
         // calc coefficient X^T*U
         MKL_Complex16 alpha(sqrt(n_realization), 0);
         MKL_Complex16 beta(0, 0);
-        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, fft_data.get_dim(1), U_spectral.get_dim(1), fft_data.get_dim(0), &alpha, fft_data.get_ptr(), fft_data.get_dim(0), U_spectral.get_ptr(), U_spectral.get_dim(0), &beta, a_spectral.get_ptr(), a_spectral.get_dim(0));
+        cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, fft_temp.get_dim(1), U_spectral.get_dim(1), fft_temp.get_dim(0), &alpha, fft_temp.get_ptr(), fft_temp.get_dim(0), U_spectral.get_ptr(), U_spectral.get_dim(0), &beta, a_spectral.get_ptr(), a_spectral.get_dim(0));
         //multiply 1/sqrt(w) matrix
         if (run_input.coord_sys == CARTESIAN) //scale uniformly
             cblas_zdscal(U_spectral.get_len(), 1. / sqrt(w(0)), U_spectral.get_ptr(), 1);
