@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 project(PSPOD CXX)
 
 include_directories("${PROJECT_BINARY_DIR}/include")
@@ -20,7 +20,7 @@ set(MKL_LD "/opt" CACHE PATH "path to mkl library")
 set(MKL_INCLUDE "/opt" CACHE PATH "path to mkl include")
 include_directories(${MKL_INCLUDE})
 set(CXX_LD ${CXX_LD} ${MKL_LD})
-set(CXX_LIB ${CXX_LIB} mkl_intel_lp64 mkl_tbb_thread mkl_core tbb pthread m dl)
+set(CXX_LIB ${CXX_LIB} mkl_intel_lp64 mkl_sequential mkl_core pthread m dl)
 
 #HDF5 library
 set(HDF5_INCLUDE "/opt" CACHE PATH "path to hdf5 include")
