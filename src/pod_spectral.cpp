@@ -14,13 +14,15 @@
 #include <sys/stat.h>
 using namespace std;
 
-pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks)
+pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks, double in_dt)
 {
     n_realization = in_n_blocks;
     block_size = in_block_size;
-    real_data.setup({in_n_probe * run_input.fields_pod.get_len(), block_size});        //space*time
+    n_probe = in_n_probe;
+    dt = in_dt;
+    real_data.setup({n_probe * run_input.fields_pod.get_len(), block_size});        //space*time
     fft_data.setup({block_size / 2 + 1, in_n_probe * run_input.fields_pod.get_len()}); //freq*space
-    fft_comp.setup({fft_data.get_dim(0), fft_data.get_dim(1)}); //same size as fft_data to write fft_data to file
+    fft_comp.setup({fft_data.get_dim(0), fft_data.get_dim(1)});                        //same size as fft_data to write fft_data to file
     //create window array
     if (run_input.window)
     {
@@ -28,10 +30,6 @@ pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_
         hann_window(hann_array);
         hann_sqr = pow(cblas_dnrm2(block_size, hann_array.get_ptr(), 1), 2);
     }
-}
-
-pod_spectral::~pod_spectral()
-{
 }
 
 void pod_spectral::calc_fft(size_t block_id)
@@ -55,13 +53,13 @@ void pod_spectral::calc_fft(size_t block_id)
     }
     //create and set descriptor
     DFTI_DESCRIPTOR_HANDLE desc_1;
-    DftiCreateDescriptor(&desc_1, DFTI_DOUBLE, DFTI_REAL, 1, run_input.block_size);
+    DftiCreateDescriptor(&desc_1, DFTI_DOUBLE, DFTI_REAL, 1, block_size);
     DftiSetValue(desc_1, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
     DftiSetValue(desc_1, DFTI_NUMBER_OF_TRANSFORMS, real_data.get_dim(1)); //space
     if (run_input.window)
-        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt((double)run_input.block_size / (double)(hann_sqr * n_realization)) / (double)run_input.block_size); //sqrt(N_f/w^2)/N_fenergy correction 1.63
+        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt((double)block_size / (double)(hann_sqr * n_realization)) / (double)block_size); //sqrt(N_f/w^2)/N_fenergy correction 1.63
     else
-        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt(1. / (double)(n_realization)) / (double)run_input.block_size); //sqrt(1/N_b)/N_f
+        DftiSetValue(desc_1, DFTI_FORWARD_SCALE, sqrt(1. / (double)(n_realization)) / (double)block_size); //sqrt(1/N_b)/N_f
     DftiSetValue(desc_1, DFTI_INPUT_DISTANCE, real_data.get_dim(0)); //time
     DftiSetValue(desc_1, DFTI_OUTPUT_DISTANCE, fft_data.get_dim(0)); //freq
     DftiSetValue(desc_1, DFTI_CONJUGATE_EVEN_STORAGE, DFTI_COMPLEX_COMPLEX);
@@ -86,12 +84,12 @@ void pod_spectral::calc_mode()
     //release memory
     real_data.setup(1);
 
-    fft_data.setup({run_input.n_probe_global* run_input.fields_pod.get_len(), n_realization}); //space*block
+    fft_data.setup({n_probe* run_input.fields_pod.get_len(), n_realization}); //space*block
     fft_comp.setup({fft_data.get_dim(0), fft_data.get_dim(1)}); //same as fft_data to load fft_data from file
     ndarray<MKL_Complex16> fft_temp;                            //temp array for coeff calculation in case fft_data is destroyed
     U_spectral.setup({fft_data.get_dim(0), min(fft_data.get_dim(0), fft_data.get_dim(1))});//space*block
     U.setup({U_spectral.get_dim(0),U_spectral.get_dim(1)});//same as U_spectral to write U_Spectral to file
-    D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1)), block_size / 2 + 1});//block*freq
+    D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1))});//block*freq
     a_spectral.setup({fft_data.get_dim(1), U_spectral.get_dim(1)});                //block*block
     a.setup({a_spectral.get_dim(0), a_spectral.get_dim(1)});                         //block*block
     ndarray<MKL_Complex16> vt_dumm(1);
@@ -102,23 +100,23 @@ void pod_spectral::calc_mode()
     //compute svd for each frequency
     for (size_t i = 0; i < block_size / 2 + 1; i++)
     {
+        freq_id = i;
         cout << "calulating modes ... for freq: " << i + 1 << " of " << block_size / 2 + 1 << '\r' << flush;
         //load fft from file
-        load_fft(i);
+        load_fft();
             //multiply sqrt(w) matrix
         if (run_input.coord_sys == CARTESIAN) //scale uniformly
             cblas_zdscal(fft_data.get_len(), sqrt(w(0)), fft_data.get_ptr(), 1);
         else if (run_input.coord_sys == CYLINDRICAL)
         {
-            for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                                                          //loop over each field
-                for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)                                                                            //loop over each probe
-                    cblas_zdscal(fft_data.get_dim(1), sqrt(w(i)), fft_data.get_ptr({i + j * run_input.n_probe_global, 0}), fft_data.get_dim(0)); //rescale each row
+            for (size_t j = 0; j < run_input.fields_pod.get_len(); j++) //loop over each field
+                for (size_t i = 0; i < n_probe; i++) //loop over each probe
+                    cblas_zdscal(fft_data.get_dim(1), sqrt(w(i)), fft_data.get_ptr({i + j * n_probe, 0}), fft_data.get_dim(0)); //rescale each row
         }
         //calc svd
         fft_temp = fft_data; //copy to temporary storage
         LAPACKE_zgesvd(LAPACK_COL_MAJOR, 'S', 'N', fft_data.get_dim(0), fft_data.get_dim(1),
-                       fft_data.get_ptr(), fft_data.get_dim(0), D.get_ptr({0, i}), U_spectral.get_ptr(),
-                       U_spectral.get_dim(0), vt_dumm.get_ptr(), U_spectral.get_dim(1), superb.get_ptr());
+                       fft_data.get_ptr(), fft_data.get_dim(0), D.get_ptr(), U_spectral.get_ptr(), U_spectral.get_dim(0), vt_dumm.get_ptr(), U_spectral.get_dim(1), superb.get_ptr());
         // calc coefficient X^T*U
         MKL_Complex16 alpha(sqrt(n_realization), 0);
         MKL_Complex16 beta(0, 0);
@@ -128,70 +126,13 @@ void pod_spectral::calc_mode()
             cblas_zdscal(U_spectral.get_len(), 1. / sqrt(w(0)), U_spectral.get_ptr(), 1);
         else if (run_input.coord_sys == CYLINDRICAL)
         {
-            for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                                                                     //loop over each field
-                for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)                                                                                       //loop over each probe
-                    cblas_zdscal(U_spectral.get_dim(1), 1. / sqrt(w(i)), U_spectral.get_ptr({i + j * run_input.n_probe_global, 0}), U_spectral.get_dim(0)); //rescale each row
+            for (size_t j = 0; j < run_input.fields_pod.get_len(); j++) //loop over each field
+                for (size_t i = 0; i < n_probe; i++) //loop over each probe
+                    cblas_zdscal(U_spectral.get_dim(1), 1. / sqrt(w(i)), U_spectral.get_ptr({i + j * n_probe, 0}), U_spectral.get_dim(0)); //rescale each row
         }
-        //write mode to file
-        write_mode(i);
-        //write coeff
-        write_coeff(i);
+        vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
+        write_results();
     }
-
-    //scale singular value to modal energy
-    vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
-    //write energy
-    write_energy();
-}
-
-void pod_spectral::write_mode(size_t freq_id)
-{
-    //open hdf5 file and dataset
-    hid_t of_id, dataspace_id, dataset_id, memspace_id;
-    hsize_t dim[3],offset[3],count[3];
-
-    of_id = H5Fopen(run_input.output_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-    dim[2]=U_spectral.get_dim(0);//space
-    dim[1]=U_spectral.get_dim(1);//block
-    dim[0]=1;//1
-    offset[2]=0;
-    offset[1]=0;
-    offset[0]=freq_id;//freq
-    count[2]=dim[2];//space
-    count[1]=dim[1];//block
-    count[0]=dim[0];
-    memspace_id=H5Screate_simple(3,dim,NULL);
-
-    //write modes
-    dataset_id = H5Dopen2(of_id,"modes_real",H5P_DEFAULT);
-    dataspace_id = H5Dget_space(dataset_id);
-    for (size_t i = 0; i < U_spectral.get_len(); i++)
-        U(i) = U_spectral(i).real();
-    if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
-                            NULL, count, NULL) < 0)
-        Fatal_Error("Failed to get hyperslab");
-    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT, U.get_ptr());
-    if (H5Dflush(dataset_id) < 0)
-        Fatal_Error("Error writing modes_real");
-    H5Dclose(dataset_id);
-    H5Sclose(dataspace_id);
-
-    dataset_id = H5Dopen2(of_id, "modes_imag", H5P_DEFAULT);
-    dataspace_id = H5Dget_space(dataset_id);
-    for (size_t i = 0; i < U_spectral.get_len(); i++)
-        U(i) = U_spectral(i).imag();
-    if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
-                            NULL, count, NULL) < 0)
-        Fatal_Error("Failed to get hyperslab");
-    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT, U.get_ptr());
-    if (H5Dflush(dataset_id) < 0)
-        Fatal_Error("Error writing modes_imag");
-    H5Dclose(dataset_id);
-    H5Sclose(dataspace_id);
-
-    //close file
-    H5Sclose(memspace_id);
-    H5Fclose(of_id);
 }
 
 void pod_spectral::dump_fft(size_t block_id)
@@ -265,7 +206,7 @@ void pod_spectral::dump_fft(size_t block_id)
     H5Fclose(f_id);
 }
 
-void pod_spectral::load_fft(size_t freq_id)
+void pod_spectral::load_fft()
 {
     hid_t f_id, dataset_id, memspace_id, dataspace_id;
     hsize_t dim[3]; //dimension for date of each snapshot
@@ -277,7 +218,7 @@ void pod_spectral::load_fft(size_t freq_id)
     //set subset dataset to read
     dim[2] = 1;                   //1
     dim[1] = fft_data.get_dim(0); //space
-    dim[0] = fft_data.get_dim(1);//block
+    dim[0] = fft_data.get_dim(1); //block
 
     offset[2] = freq_id;
     offset[1] = 0;
@@ -325,7 +266,7 @@ void pod_spectral::create_result()
     //write metadata to root
     dataspace_id = H5Screate(H5S_SCALAR);
     //sampling interval
-    double df = 1. / (run_input.dt * run_input.block_size);
+    double df = 1. / (dt * block_size);
     attr_id = H5Acreate(of_id, "df", H5T_NATIVE_DOUBLE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(attr_id, H5T_NATIVE_DOUBLE, &df);
     H5Aclose(attr_id);
@@ -348,7 +289,7 @@ void pod_spectral::create_result()
 
     //create modal energy
     dim[1] = D.get_dim(0);
-    dim[0] = D.get_dim(1);
+    dim[0] = block_size / 2 + 1;
     dataspace_id = H5Screate_simple(2, dim, NULL);
     dataset_id = H5Dcreate2(of_id, "modal_energy", H5T_NATIVE_DOUBLE, dataspace_id,
                             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -356,9 +297,9 @@ void pod_spectral::create_result()
     H5Sclose(dataspace_id);
 
     //create modes
-    dim[2] = U_spectral.get_dim(0);//space
-    dim[1] = U_spectral.get_dim(1);//block
-    dim[0] = block_size / 2 + 1;//freq
+    dim[2] = U_spectral.get_dim(0); //space
+    dim[1] = U_spectral.get_dim(1); //block
+    dim[0] = block_size / 2 + 1;    //freq
     dataspace_id = H5Screate_simple(3, dim, NULL);
     dataset_id = H5Dcreate2(of_id, "modes_real", H5T_NATIVE_DOUBLE, dataspace_id,
                             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -386,24 +327,77 @@ void pod_spectral::create_result()
     H5Fclose(of_id);
 }
 
-void pod_spectral::write_energy()
+void pod_spectral::write_results()
 {
-    hid_t f_id, dataset_id;
-    f_id = H5Fopen(run_input.output_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-    //write modal energy
-    dataset_id = H5Dopen2(f_id, "modal_energy", H5P_DEFAULT);
-    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, D.get_ptr());
-    H5Dclose(dataset_id);
-    H5Fclose(f_id);
-}
+    hid_t f_id, dataset_id, dataspace_id, memspace_id;
+    hsize_t dim[3], offset[3], count[3];
 
-void pod_spectral::write_coeff(size_t freq_id)
-{
-    hid_t f_id, dataspace_id, dataset_id, memspace_id;
-    hsize_t dim[3],offset[3],count[3];
-    //open file
     f_id = H5Fopen(run_input.output_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-    //set dimension
+
+    //write modal energy
+    dim[1] = D.get_dim(0); //n_mode
+    dim[0] = 1;
+
+    offset[1] = 0;
+    offset[0] = freq_id;
+
+    count[1] = dim[1];
+    count[0] = dim[0];
+    memspace_id = H5Screate_simple(3, dim, NULL);
+
+    dataset_id = H5Dopen2(f_id, "modal_energy", H5P_DEFAULT);
+    dataspace_id = H5Dget_space(dataset_id);
+    if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
+                            NULL, count, NULL) < 0)
+        Fatal_Error("Failed to get hyperslab");
+    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT, D.get_ptr());
+    if (H5Dflush(dataset_id) < 0)
+        Fatal_Error("Error writing modes_real");
+    H5Dclose(dataset_id);
+    H5Sclose(dataspace_id);
+    H5Sclose(memspace_id);
+
+    //write modes
+    dim[2] = U_spectral.get_dim(0); //space
+    dim[1] = U_spectral.get_dim(1); //block
+    dim[0] = 1;                     //1
+    offset[2] = 0;
+    offset[1] = 0;
+    offset[0] = freq_id; //freq
+    count[2] = dim[2];   //space
+    count[1] = dim[1];   //block
+    count[0] = dim[0];
+
+    memspace_id = H5Screate_simple(3, dim, NULL);
+
+    dataset_id = H5Dopen2(f_id, "modes_real", H5P_DEFAULT);
+    dataspace_id = H5Dget_space(dataset_id);
+    for (size_t i = 0; i < U_spectral.get_len(); i++)
+        U(i) = U_spectral(i).real();
+    if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
+                            NULL, count, NULL) < 0)
+        Fatal_Error("Failed to get hyperslab");
+    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT, U.get_ptr());
+    if (H5Dflush(dataset_id) < 0)
+        Fatal_Error("Error writing modes_real");
+    H5Dclose(dataset_id);
+    H5Sclose(dataspace_id);
+
+    dataset_id = H5Dopen2(f_id, "modes_imag", H5P_DEFAULT);
+    dataspace_id = H5Dget_space(dataset_id);
+    for (size_t i = 0; i < U_spectral.get_len(); i++)
+        U(i) = U_spectral(i).imag();
+    if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
+                            NULL, count, NULL) < 0)
+        Fatal_Error("Failed to get hyperslab");
+    H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT, U.get_ptr());
+    if (H5Dflush(dataset_id) < 0)
+        Fatal_Error("Error writing modes_imag");
+    H5Dclose(dataset_id);
+    H5Sclose(dataspace_id);
+    H5Sclose(memspace_id);
+
+    //write coeff
     dim[2] = a_spectral.get_dim(0); //space
     dim[1] = a_spectral.get_dim(1); //block
     dim[0] = 1;                     //1
@@ -413,7 +407,7 @@ void pod_spectral::write_coeff(size_t freq_id)
     count[2] = dim[2];   //space
     count[1] = dim[1];   //block
     count[0] = dim[0];
-    memspace_id=H5Screate_simple(3,dim,NULL);
+    memspace_id = H5Screate_simple(3, dim, NULL);
 
     //open dataset
     dataset_id = H5Dopen2(f_id, "coeff_real", H5P_DEFAULT);
@@ -441,5 +435,7 @@ void pod_spectral::write_coeff(size_t freq_id)
         Fatal_Error("Error writing coeff_imag");
     H5Dclose(dataset_id);
     H5Sclose(dataspace_id);
+
+    //close file
     H5Fclose(f_id);
 }

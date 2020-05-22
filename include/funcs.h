@@ -13,22 +13,16 @@
 #include "global.h"
 
 /**
- * @brief calculate classic pod
- * @fn calc_classic_pod
- * @return int flag
- */
-void calc_classic_pod(void);
-
-/**
  * @brief calculate snapshot pod
- * @fn calc_snapshot_pod
- * @return int flag
  */
-void calc_snapshot_pod(void);
+void CalculateSpatialPOD(void);
 
 /**
  * @brief calculate spectral pod
- * @fn calc_spectral_pod
- * @return int flag
  */
-void calc_spectral_pod(void);
+void CalculateSpectralPOD(void);
+
+/**
+ * @brief calculate azimuthal decomposed spectral pod
+ */
+void CalculateAzimuthalSpectralPOD(void);

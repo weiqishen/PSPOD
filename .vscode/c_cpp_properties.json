@@ -93,7 +93,7 @@
                 "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
                 "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
                 "${workspaceFolder}/include",
-                "D:/Workstation/Linux/lib/hdf5-1.10.2/hdf5/include"
+                "D:/Workstation/Linux/lib/hdf5-1.12.0/serial/include"
             ],
             "browse": {
                 "path": [
@@ -107,7 +107,7 @@
                     "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
                     "C:/Users/Shen/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include",
                     "${workspaceFolder}/include",
-                    "D:/Workstation/Linux/lib/hdf5-1.10.2/hdf5/include"
+                    "D:/Workstation/Linux/lib/hdf5-1.12.0/serial/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

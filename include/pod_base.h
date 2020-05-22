@@ -16,29 +16,29 @@
 class pod_base
 {
 public:
-  //constructors/destructors
-  pod_base();
-  pod_base(size_t in_n_probe, size_t in_n_snap);
-  ~pod_base();
+  //constructor/destructor
+  pod_base() = default;
+  pod_base(size_t in_n_probe, size_t in_n_snap, double in_dt);
+  virtual ~pod_base() = default;
 
-  //computational methods
-  virtual void calc_mode(); //!<calculate mode from real_data using evd(real_data'*real_data)
-  void calc_mean();         //!<calculate mean of real_data along axis=0
-  void subtract_mean();     //!<subtract mean from real_data along axis=0
-  
+  //computation methods
+  virtual void calc_mode(void); //!<calculate mode from real_data using svd(real_data)
+  void calc_mean(void);         //!<calculate mean of real_data along axis=0
+  void subtract_mean(void);     //!<subtract mean from real_data along axis=0
+  void calculateWeight(double *in_coord);  //!<calculate the quadrature weight array 
+
   //output methods
   virtual void write_results(); //!<write modal energy, modes, etc. to hdf5 file
   void write_coord(ndarray<double> &in_coord); //!< write coordinates to hdf5 file
 
   //public data member
-  ndarray<double> w;         //!< quadrature weight
   ndarray<double> real_data; //space*time
+  size_t n_realization, n_probe;
+  double dt;
 
 protected:
-  //meta data to describe local data array (when parallel)
-  size_t n_realization;
-
   //heavy data for pod calculation
+  ndarray<double> w;         //!< quadrature weight
   ndarray<double> mean_data; //space
   ndarray<double> U, D;      //!<POD modes(space*n), modal energy(n)
   ndarray<double> a;         //!<modal coefficient(time*time)

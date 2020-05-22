@@ -19,16 +19,18 @@ data_loader::data_loader(string in_filename)
 
     file_nameS = in_filename;
     open_flag = false; //set open flag to false
-    cout<<"Loading snapshot file info..."<<flush;
+
+    cout << "Loading snapshot file info..." << flush;
     open_file();
     read_attr();
+    read_coord();
     close_file();
     cout << "done." << endl;
     cout << endl;
-    cout << "Sampling interval: " << run_input.dt << " s" << endl;
-    cout << "Total number of probes: " << run_input.n_probe_global << endl;
-    cout << "Total number of snapshots: " << run_input.n_snap_global << endl;
-    cout << "Fields from data: " << run_input.fields_data << endl;
+    cout << "Sampling interval: " << dt << " s" << endl;
+    cout << "Total number of probes: " << n_probe_data << endl;
+    cout << "Total number of snapshots: " << n_snap_data << endl;
+    cout << "Fields from data: " << fields_data << endl;
 }
 
 data_loader::~data_loader()
@@ -75,13 +77,13 @@ void data_loader::read_attr()
     space_id = H5Aget_space(fields_id);
     H5Sget_simple_extent_dims(space_id, dim, NULL);
     H5Sclose(space_id);
-    run_input.fields_data.setup(dim[0]); //setup fields array
+    fields_data.setup(dim[0]); //setup fields array
     temp_field = new char *[dim[0]];
     str_ftype = H5Aget_type(fields_id);
     str_type = H5Tget_native_type(str_ftype, H5T_DIR_ASCEND);
 
     //read attributes
-    H5Aread(dt_id, H5T_NATIVE_DOUBLE, &run_input.dt);
+    H5Aread(dt_id, H5T_NATIVE_DOUBLE, &dt);
     H5Aread(fields_id, str_type, temp_field);
     H5Tclose(str_ftype);
     H5Tclose(str_type);
@@ -90,7 +92,7 @@ void data_loader::read_attr()
     //copy back to fields
     for (size_t i = 0; i < size_t(dim[0]); i++)
     {
-        run_input.fields_data(i).assign(temp_field[i]);
+        fields_data(i).assign(temp_field[i]);
         delete[] temp_field[i];
     }
     delete[] temp_field;
@@ -98,16 +100,16 @@ void data_loader::read_attr()
     //set id of fields to read
     for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over the pod fields
     {
-        for (size_t j = 0; j < run_input.fields_data.get_len(); j++) //loop over the data fields
+        for (size_t j = 0; j < fields_data.get_len(); j++) //loop over the data fields
         {
-            if (run_input.fields_pod(i) == run_input.fields_data(j)) //found in the data file
+            if (run_input.fields_pod(i) == fields_data(j)) //found in the data file
             {
                 field_data_id.push_back(j);
                 break;
             }
             else
             {
-                if (j == run_input.fields_data.get_len() - 1)
+                if (j == fields_data.get_len() - 1)
                     Fatal_Error("Can't find the POD field in the data file!");
             }
         }
@@ -121,8 +123,8 @@ void data_loader::read_attr()
         Fatal_Error("Failed to open dataset");
     space_id = H5Dget_space(data_id);
     H5Sget_simple_extent_dims(space_id, dim, NULL);
-    run_input.n_probe_global = dim[1];
-    run_input.n_snap_global = dim[2];
+    n_probe_data = dim[1];
+    n_snap_data = dim[2];
     H5Sclose(space_id);
     H5Dclose(data_id);
 }
@@ -195,31 +197,4 @@ void data_loader::read_coord()
         Fatal_Error("Failed to read subset of data");
     H5Sclose(dataspace_id);
     H5Dclose(dataset_id);
-}
-
-void data_loader::calc_weight(ndarray<double> &weight)
-{
-    double dw = 1.;
-
-    //calculate product of increment
-    for (size_t i = 0; i < run_input.d_xyz.get_len(); i++)
-        dw *= run_input.d_xyz(i);
-        
-    if (run_input.coord_sys == CARTESIAN)//only one number is needed
-    {
-        weight.setup(1),
-        weight = dw;
-    }
-    else if (run_input.coord_sys == CYLINDRICAL)//one weight for each probe
-    {
-        weight.setup(run_input.n_probe_global); //total number of probe points
-        for (size_t i = 0; i < (size_t)run_input.n_probe_global; i++)
-        {
-            weight(i) = dw * coord({0, i}); //rdrdthetadz
-        }
-    }
-    else
-    {
-        Fatal_Error("Unsupported coordinate system!")
-    }
 }

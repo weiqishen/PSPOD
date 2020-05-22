@@ -14,14 +14,6 @@
 
 using namespace std;
 
-input::input()
-{
-}
-
-input::~input()
-{
-}
-
 void input::setup(char *input_fname)
 {
     file_nameS.assign(input_fname);
@@ -36,7 +28,7 @@ void input::read_param(void)
     param_reader pr(file_nameS);
     pr.openFile();
     //--------------Read params------------------
-    pr.getScalarValue("task", task, int(CLASSIC_POD));
+    pr.getScalarValue("task", task, int(SNAPSHOT_POD));
     pr.getScalarValue("data_file", data_filename);
     pr.getScalarValue("output_file", output_filename, string("output.h5"));
     if (run_input.output_filename.find(".") == string::npos)
@@ -50,16 +42,22 @@ void input::read_param(void)
     else
         Fatal_Error("Unsupported coordinate system");
 
-    if (task == SPECTRAL_POD)
+    if (task ==SNAPSHOT_POD)
+    {
+        pr.getScalarValue("write_mean", write_mean);
+    }
+    else if (task == SPECTRAL_POD)
     {
         pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
         pr.getScalarValue("from_dump", from_dump, 0);
     }
-    else
+    else if (task == AZIMUTHAL_SPOD)
     {
-        pr.getScalarValue("write_mean", write_mean);
+        if (coord_sys == CARTESIAN)
+            Fatal_Error("Azimuthal decomposed spectral POD only support cylindrical coordinate data.");
     }
+
     pr.closeFile();
 }

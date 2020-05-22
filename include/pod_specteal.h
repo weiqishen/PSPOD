@@ -13,26 +13,28 @@
 class pod_spectral : public pod_base
 {
 public:
-  pod_spectral();
-  pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks);
-  ~pod_spectral();
-  
-  void calc_fft(size_t block_id);//!<calculate fft of real_data(time*space)
-  void calc_mode();//!<calculate mode from fft_data using svd(fft_data)
+  //constructor/destructor
+  ~pod_spectral() = default;
+  pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks, double in_dt);
+
+  void calc_fft(size_t block_id); //!<calculate fft of real_data(time*space)
   void dump_fft(size_t block_id);
-  void load_fft(size_t freq_id);
-  void create_result();//write attributions to result file
-  void write_mode(size_t freq_id);//!<write modes to file
-  void write_energy();//!<write modal energy
-  void write_coeff(size_t freq_id);//!<write modal coefficients
-protected:
+  void load_fft();
+  void calc_mode(); //!<calculate mode from fft_data using svd(fft_data)
+  void create_result(); //write attributions to result file
+  void write_results(); //!<write results to file
+
   //meta data to describe local data array
   size_t block_size;
+protected:
   //heavy data for pod calculation
-  ndarray<double> hann_array;//!< hann window array
+  ndarray<double> hann_array; //!< hann window array
   double hann_sqr;
-  ndarray<MKL_Complex16> fft_data;//!<(frequency*space)
-  ndarray<MKL_Complex16> U_spectral;//!<spectral POD modes
-  ndarray<MKL_Complex16> a_spectral;//!<(block*block)
-  ndarray<double> fft_comp;//!<temp array to load fft data
+  ndarray<MKL_Complex16> fft_data;   //!<(frequency*space)
+  ndarray<MKL_Complex16> U_spectral; //!<spectral POD modes
+  ndarray<MKL_Complex16> a_spectral; //!<(block*block)
+  ndarray<double> fft_comp;          //!<temp array to load fft data
+
+private:
+  size_t freq_id; //a counter to determine which frequency to write to
 };

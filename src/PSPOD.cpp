@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
   }
   if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) //help
   {
-    cout << "For help go to github wiki page" << endl;
+    cout << "PSPOD <input_file>" << endl;
+    cout << "For more help, go to Github repository." << endl;
     return 0;
   }
 
@@ -35,14 +36,14 @@ int main(int argc, char *argv[])
   //start main program
   switch (run_input.task)
   {
-  case CLASSIC_POD:
-    calc_classic_pod();
-    break;
   case SNAPSHOT_POD:
-    calc_snapshot_pod();
+    CalculateSpatialPOD();
     break;
   case SPECTRAL_POD:
-    calc_spectral_pod();
+    CalculateSpectralPOD();
+    break;
+  case AZIMUTHAL_SPOD:
+    CalculateAzimuthalSpectralPOD();
     break;
   default:
     Fatal_Error("Feature not implemented");

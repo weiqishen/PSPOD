@@ -14,9 +14,9 @@
 
 enum TASK
 {
-  CLASSIC_POD = 0,
-  SNAPSHOT_POD = 1,
-  SPECTRAL_POD = 2,
+   SNAPSHOT_POD = 0,
+   SPECTRAL_POD = 1,
+   AZIMUTHAL_SPOD = 2,
 };
 
 enum COORD_SYS
@@ -28,56 +28,50 @@ enum COORD_SYS
 class input
 {
 public:
-  //methods
+   //methods
 
-  /**
+   /**
      * @brief Construct a new input object
      * 
      */
-  input();
+   input() = default;
 
-  /**
+   /**
      * @brief Destroy the input object
      * 
      */
-  ~input();
+   ~input() = default;
 
-  /**
+   /**
      * @brief setup input
      * 
      * @param input_fname name of input file 
      */
-  void setup(char *input_fname);
+   void setup(char *input_fname);
 
-  /**
+   /**
      * @brief read parameters from input file
      * 
      */
-  void read_param(void);
+   void read_param(void);
 
-  //---------------data--------------------
+   //---------------data--------------------
 
-  //***Common params***
-  int task;               //!< task to do 0[default]- classic POD; 1-Snapshot POD; 2-spectral POD; 3-DMD
-  string data_filename;   //!< data file name
-  string output_filename; //!< output file name
-  ndarray<double> d_xyz; //!< space between each probe in each direction
-  ndarray<string> fields_pod; //!< fields need to perform pod
-  int coord_sys; //!< coordinated system 0: cartesian; 1: cylindrical
-  // Classic POD or Snapshot POD
-  int write_mean;     //!< if write mean data to output
-  //Spectral POD
-  int window;         //!< whether apply windowing before fft
-  size_t overlap;    //!< number of snapshots which overlap between blocks
-  size_t block_size; //!< size of each block
-  int from_dump; //!< if load fft data from dumped temp file
-
-  //meta data from snapshot files
-  double dt; //!<time step size
-  int n_probe_global; //!< total number of probes
-  int n_snap_global;  //!< total number of snapshots
-  ndarray<string> fields_data; //!<fields in data file
+   //***Common params***
+   int task;                   //!< task to do 0[default]-Snapshot POD; 1-spectral POD; 2-azimuthal decomposed spectral POD
+   string data_filename;       //!< data file name
+   string output_filename;     //!< output file name
+   ndarray<double> d_xyz;      //!< space between each probe in each direction
+   ndarray<string> fields_pod; //!< fields need to perform pod
+   int coord_sys;              //!< coordinated system 0: cartesian; 1: cylindrical
+   //Snapshot POD
+   int write_mean; //!< if write mean data to output
+   //Spectral POD
+   int window;        //!< whether apply windowing before fft
+   size_t overlap;    //!< number of snapshots which overlap between blocks
+   size_t block_size; //!< size of each block
+   int from_dump;     //!< if load fft data from dumped temp file
 
 protected:
-  std::string file_nameS;
+   std::string file_nameS;
 };

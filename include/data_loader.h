@@ -57,13 +57,6 @@ public:
    * 
    */
   void read_coord(void);
-  
-  /**
-   * @brief calculate quadrature weight
-   * 
-   * @param weight weight array to hold quadrature weight
-   */
-  void calc_weight(ndarray<double> &weight);
 
   /**
    * @brief partial load data from snapshot file
@@ -76,8 +69,13 @@ public:
    */
   void partial_load_data(size_t p_start, size_t n_p, size_t s_start, size_t n_s, double *out_data);
 
+  //meta data from snapshot files
   ndarray<double> coord;
-  
+  double dt; //!<time step size
+  size_t n_probe_data; //!< total number of probes
+  size_t n_snap_data;  //!< total number of snapshots
+  ndarray<string> fields_data; //!<fields in data file
+
 private:
   //data for file reading
   string file_nameS;
