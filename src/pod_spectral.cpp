@@ -89,9 +89,9 @@ void pod_spectral::calc_mode()
     ndarray<MKL_Complex16> fft_temp;                            //temp array for coeff calculation in case fft_data is destroyed
     U_spectral.setup({fft_data.get_dim(0), min(fft_data.get_dim(0), fft_data.get_dim(1))});//space*block
     U.setup({U_spectral.get_dim(0),U_spectral.get_dim(1)});//same as U_spectral to write U_Spectral to file
-    D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1))});//block*freq
-    a_spectral.setup({fft_data.get_dim(1), U_spectral.get_dim(1)});                //block*block
-    a.setup({a_spectral.get_dim(0), a_spectral.get_dim(1)});                         //block*block
+    D.setup({min(fft_data.get_dim(0), fft_data.get_dim(1))});//block
+    a_spectral.setup({fft_data.get_dim(1), U_spectral.get_dim(1)}); //block*block
+    a.setup({a_spectral.get_dim(0), a_spectral.get_dim(1)}); //block*block
     ndarray<MKL_Complex16> vt_dumm(1);
     ndarray<double> superb{min(fft_data.get_dim(0), fft_data.get_dim(1)) - 1}; //min(m,n)-1
     //create result file
@@ -343,7 +343,7 @@ void pod_spectral::write_results()
 
     count[1] = dim[1];
     count[0] = dim[0];
-    memspace_id = H5Screate_simple(3, dim, NULL);
+    memspace_id = H5Screate_simple(2, dim, NULL);
 
     dataset_id = H5Dopen2(f_id, "modal_energy", H5P_DEFAULT);
     dataspace_id = H5Dget_space(dataset_id);
