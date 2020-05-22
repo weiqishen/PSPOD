@@ -107,6 +107,15 @@ void data_loader::read_attr()
                 field_data_id.push_back(j);
                 break;
             }
+            else if (run_input.fields_pod(i) == "a" && fields_data(j) == "rho") //a is equivalent ot rho
+            {
+                field_data_id.push_back(j);
+                if (fields_data.get_len() < 5)
+                    Fatal_Error("Calculation of speed of sound requires pressure.");
+                if (fields_data(4) != "pressure")
+                    Fatal_Error("Calculation of speed of sound requires pressure.");
+                break;
+            }
             else
             {
                 if (j == fields_data.get_len() - 1)
@@ -135,6 +144,10 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
     hsize_t dim[3]; //dimension for date of each snapshot
     hsize_t count[3]; 
     hsize_t offset[3];
+    ndarray<double> temp_pressure;
+
+    if (run_input.fields_pod(0) == "a")
+        temp_pressure.setup(n_p);
 
     //set subset dataset to read
     dim[0] = run_input.fields_pod.get_len();//dimension for each read field*point*1
@@ -167,6 +180,24 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
         if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, memspace_id, dataspace_id, H5P_DEFAULT,
                     out_data + dim[0]*dim[1] * i) < 0)
             Fatal_Error("Failed to read subset of data");
+        
+        //calculate speed of sound if pod field has "a" or norm=2
+        if (run_input.fields_pod(0) == "a")
+        {
+            hid_t memspace_id2;
+            offset[0] = 4;
+            if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
+                                    NULL, count, NULL) < 0)
+                Fatal_Error("Failed to get hyperslab");
+            //read from dataset
+            memspace_id2 = H5Screate_simple(3, count, NULL);
+            if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, memspace_id2, dataspace_id, H5P_DEFAULT,
+                        temp_pressure.get_ptr()) < 0)
+                Fatal_Error("Failed to read subset of data");
+            for (size_t j = 0; j < n_p; j++)
+                out_data[j + dim[0] * dim[1] * i] = sqrt(1.4 * temp_pressure(j) / out_data[j + dim[0] * dim[1] * i]);
+            H5Sclose(memspace_id2);
+        }
     }
     //close objects
     H5Sclose(memspace_id);

@@ -44,27 +44,20 @@ void pod_base::subtract_mean()
 void pod_base::calculateWeight(double *in_coord)
 {
     double dw = 1.;
+    w.setup(n_probe);
 
     //calculate product of increment
     for (size_t i = 0; i < run_input.d_xyz.get_len(); i++)
         dw *= run_input.d_xyz(i);
 
     if (run_input.coord_sys == CARTESIAN) //only one number is needed
-    {
-        w.setup(1);
         w = dw;
-    }
     else if (run_input.coord_sys == CYLINDRICAL) //one weight for each probe
-    {
-        w.setup(n_probe);
         for (size_t i = 0; i < n_probe; i++)
-        {
             w(i) = dw * in_coord[run_input.d_xyz.get_len() * i]; //rdrdthetadz
-        }
-    }
     else
     {
-        Fatal_Error("Unsupported coordinate system!")
+        Fatal_Error("Unsupported coordinate system!");
     }
 }
 
@@ -75,14 +68,10 @@ void pod_base::calc_mode()
     a.setup({real_data.get_dim(1), U.get_dim(1)});
 
     //multiply sqrt(w) matrix
-    if (run_input.coord_sys == CARTESIAN) //scale uniformly
-        cblas_dscal(real_data.get_len(), sqrt(w(0)), real_data.get_ptr(), 1);
-    else if (run_input.coord_sys == CYLINDRICAL)
-    {
-        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                                           //loop over each field
-            for (size_t i = 0; i < n_probe; i++)                                                                              //loop over each probe
-                cblas_dscal(real_data.get_dim(1), sqrt(w(i)), real_data.get_ptr({i + j * n_probe, 0}), real_data.get_dim(0)); //rescale each row
-    }
+    for (size_t j = 0; j < run_input.fields_pod.get_len(); j++) //loop over each field
+        for (size_t i = 0; i < n_probe; i++) //loop over each probe
+            cblas_dscal(real_data.get_dim(1), sqrt(w(i) * run_input.w_field(j)), real_data.get_ptr({i + j * n_probe, 0}), real_data.get_dim(0)); //rescale each row
+
     //scale by sqrt(1/n_realization)
     cblas_dscal(real_data.get_len(), sqrt(1. / n_realization), real_data.get_ptr(), 1);
 
@@ -98,15 +87,11 @@ void pod_base::calc_mode()
     vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
     //calc coefficient X^T*U
     cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, temp_real.get_dim(1), U.get_dim(1), temp_real.get_dim(0), sqrt(n_realization), temp_real.get_ptr(), temp_real.get_dim(0), U.get_ptr(), U.get_dim(0), 0, a.get_ptr(), a.get_dim(0));
+    
     //multiply 1/sqrt(w) matrix
-    if (run_input.coord_sys == CARTESIAN) //scale uniformly
-        cblas_dscal(U.get_len(), 1. / sqrt(w(0)), U.get_ptr(), 1);
-    else if (run_input.coord_sys == CYLINDRICAL)
-    {
-        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)                                        //loop over each field
-            for (size_t i = 0; i < n_probe; i++)                                                           //loop over each probe
-                cblas_dscal(U.get_dim(1), 1. / sqrt(w(i)), U.get_ptr({i + j * n_probe, 0}), U.get_dim(0)); //rescale each row
-    }
+    for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)//loop over each field
+        for (size_t i = 0; i < n_probe; i++)//loop over each probe
+            cblas_dscal(U.get_dim(1), 1. / sqrt(w(i)*run_input.w_field(j)), U.get_ptr({i + j * n_probe, 0}), U.get_dim(0)); //rescale each row
 }
 
 void pod_base::write_results()

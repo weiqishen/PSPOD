@@ -30,10 +30,40 @@ void input::read_param(void)
     //--------------Read params------------------
     pr.getScalarValue("task", task, int(SNAPSHOT_POD));
     pr.getScalarValue("data_file", data_filename);
+    pr.getScalarValue("gamma", gamma, 1.4);
     pr.getScalarValue("output_file", output_filename, string("output.h5"));
     if (run_input.output_filename.find(".") == string::npos)
         run_input.output_filename += ".h5";
-    pr.getVectorValue("fields", fields_pod);
+
+    pr.getScalarValue("norm", norm_pod, int(DEFAULT));
+    if(norm_pod==DEFAULT)
+    {
+        pr.getVectorValue("fields", fields_pod);
+        pr.getVectorValue("w_field", w_field);
+    }
+    else if (norm_pod == SPECIFIC_KINETIC_ENERGY)
+    {
+        fields_pod.setup(3);
+        w_field.setup(3);
+        w_field = 1.;
+        fields_pod(0) = "u";
+        fields_pod(1) = "v";
+        fields_pod(2) = "w";
+    }
+    else if (norm_pod == SPECIFIC_TOTAL_ENTHALPY)
+    {
+        fields_pod.setup(4);
+        w_field.setup(4);
+        fields_pod(0) = "a";
+        w_field(0) = 2. / (gamma - 1.);
+        fields_pod(1) = "u";
+        w_field(1) = 1.;
+        fields_pod(2) = "v";
+        w_field(2) = 1.;
+        fields_pod(3) = "w";
+        w_field(3) = 1.;
+    }
+
     pr.getScalarValue("coord_sys",coord_sys,int(CARTESIAN));
     if (run_input.coord_sys == CARTESIAN)
         pr.getVectorValue("d_xyz", d_xyz);
