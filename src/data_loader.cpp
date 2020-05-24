@@ -98,22 +98,31 @@ void data_loader::read_attr()
     delete[] temp_field;
 
     //set id of fields to read
-    for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over the pod fields
+    if (run_input.norm_pod == SPECIFIC_TOTAL_ENTHALPY)
+    {
+        if (fields_data(0) == "rho")
+            field_data_id.push_back(0);
+        else
+            Fatal_Error("The first field in data file must be density!");
+        for (size_t i = 0; i < fields_data.get_len(); i++)
+        {
+            if (fields_data(i) == "pressure")
+            {
+                pressure_id = i;
+                break;
+            }
+            if (i == fields_data.get_len() - 1)
+                Fatal_Error("Cant find pressure field in the data!");
+        }
+    }
+
+    for (size_t i = field_data_id.size(); i < run_input.fields_pod.get_len(); i++) //loop over the pod fields
     {
         for (size_t j = 0; j < fields_data.get_len(); j++) //loop over the data fields
         {
             if (run_input.fields_pod(i) == fields_data(j)) //found in the data file
             {
                 field_data_id.push_back(j);
-                break;
-            }
-            else if (run_input.fields_pod(i) == "a" && fields_data(j) == "rho") //a is equivalent ot rho
-            {
-                field_data_id.push_back(j);
-                if (fields_data.get_len() < 5)
-                    Fatal_Error("Calculation of speed of sound requires pressure.");
-                if (fields_data(4) != "pressure")
-                    Fatal_Error("Calculation of speed of sound requires pressure.");
                 break;
             }
             else
@@ -146,7 +155,7 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
     hsize_t offset[3];
     ndarray<double> temp_pressure;
 
-    if (run_input.fields_pod(0) == "a")
+    if (run_input.norm_pod == SPECIFIC_TOTAL_ENTHALPY)
         temp_pressure.setup(n_p);
 
     //set subset dataset to read
@@ -182,10 +191,10 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
             Fatal_Error("Failed to read subset of data");
         
         //calculate speed of sound if pod field has "a" or norm=2
-        if (run_input.fields_pod(0) == "a")
+        if (run_input.norm_pod == SPECIFIC_TOTAL_ENTHALPY)
         {
             hid_t memspace_id2;
-            offset[0] = 4;
+            offset[0] = pressure_id;
             if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
                                     NULL, count, NULL) < 0)
                 Fatal_Error("Failed to get hyperslab");
@@ -195,7 +204,7 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
                         temp_pressure.get_ptr()) < 0)
                 Fatal_Error("Failed to read subset of data");
             for (size_t j = 0; j < n_p; j++)
-                out_data[j + dim[0] * dim[1] * i] = sqrt(1.4 * temp_pressure(j) / out_data[j + dim[0] * dim[1] * i]);
+                out_data[j + dim[0] * dim[1] * i] = sqrt(run_input.gamma * temp_pressure(j) / out_data[j + dim[0] * dim[1] * i]);
             H5Sclose(memspace_id2);
         }
     }

@@ -32,14 +32,16 @@ void input::read_param(void)
     pr.getScalarValue("data_file", data_filename);
     pr.getScalarValue("gamma", gamma, 1.4);
     pr.getScalarValue("output_file", output_filename, string("output.h5"));
-    if (run_input.output_filename.find(".") == string::npos)
-        run_input.output_filename += ".h5";
+    if (output_filename.find(".") == string::npos)
+        output_filename += ".h5";
 
     pr.getScalarValue("norm", norm_pod, int(DEFAULT));
-    if(norm_pod==DEFAULT)
+    if (norm_pod == DEFAULT)
     {
         pr.getVectorValue("fields", fields_pod);
         pr.getVectorValue("w_field", w_field);
+        if (fields_pod.get_len() != w_field.get_len())
+            Fatal_Error("w_fields must has the same length as fields!");
     }
     else if (norm_pod == SPECIFIC_KINETIC_ENERGY)
     {
@@ -64,30 +66,28 @@ void input::read_param(void)
         w_field(3) = 1.;
     }
 
-    pr.getScalarValue("coord_sys",coord_sys,int(CARTESIAN));
-    if (run_input.coord_sys == CARTESIAN)
+    pr.getScalarValue("coord_sys", coord_sys, int(CARTESIAN));
+    if (coord_sys == CARTESIAN)
         pr.getVectorValue("d_xyz", d_xyz);
-    else if (run_input.coord_sys == CYLINDRICAL)
+    else if (coord_sys == CYLINDRICAL)
         pr.getVectorValue("d_rtz", d_xyz);
     else
         Fatal_Error("Unsupported coordinate system");
 
-    if (task ==SNAPSHOT_POD)
+    if (task == SNAPSHOT_POD)
     {
         pr.getScalarValue("write_mean", write_mean);
     }
-    else if (task == SPECTRAL_POD)
+    else if (task == SPECTRAL_POD || task == AZIMUTHAL_SPOD)
     {
         pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
         pr.getScalarValue("from_dump", from_dump, 0);
-    }
-    else if (task == AZIMUTHAL_SPOD)
-    {
-        if (coord_sys == CARTESIAN)
+        if (task == AZIMUTHAL_SPOD && coord_sys == CARTESIAN)
             Fatal_Error("Azimuthal decomposed spectral POD only support cylindrical coordinate data.");
     }
-
+    else
+        Fatal_Error("Unsupported task!");
     pr.closeFile();
 }

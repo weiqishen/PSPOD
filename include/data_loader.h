@@ -82,4 +82,5 @@ private:
   hid_t file_id;
   bool open_flag;
   vector<size_t> field_data_id;
+  size_t pressure_id;
 };

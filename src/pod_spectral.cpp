@@ -114,7 +114,7 @@ void pod_spectral::calc_mode()
         fft_temp = fft_data; //copy to temporary storage
         LAPACKE_zgesvd(LAPACK_COL_MAJOR, 'S', 'N', fft_data.get_dim(0), fft_data.get_dim(1),
                        fft_data.get_ptr(), fft_data.get_dim(0), D.get_ptr(), U_spectral.get_ptr(), U_spectral.get_dim(0), vt_dumm.get_ptr(), U_spectral.get_dim(1), superb.get_ptr());
-        // calc coefficient X^T*U
+        // calc coefficient a^H=X^H*U
         MKL_Complex16 alpha(sqrt(n_realization), 0);
         MKL_Complex16 beta(0, 0);
         cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, fft_temp.get_dim(1), U_spectral.get_dim(1), fft_temp.get_dim(0), &alpha, fft_temp.get_ptr(), fft_temp.get_dim(0), U_spectral.get_ptr(), U_spectral.get_dim(0), &beta, a_spectral.get_ptr(), a_spectral.get_dim(0));
@@ -420,7 +420,7 @@ void pod_spectral::write_results()
     dataset_id = H5Dopen2(f_id, "coeff_imag", H5P_DEFAULT);
     dataspace_id = H5Dget_space(dataset_id);
     for (size_t i = 0; i < a_spectral.get_len(); i++)
-        a(i) = a_spectral(i).imag();
+        a(i) = -a_spectral(i).imag();//conjugate
     if (H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, offset,
                             NULL, count, NULL) < 0)
         Fatal_Error("Failed to get hyperslab");
