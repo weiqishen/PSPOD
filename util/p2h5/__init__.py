@@ -66,7 +66,7 @@ def convert(ppath,args):
         hdata[:, start_id:start_id+n_read, i] = data[:, :, i]
     # all processors write attribute to the dataset
     hfile.attrs["dt"]=pr.dt
-    hfile.attrs.create("fields", pr.fields, dtype=h5py.special_dtype(vlen=str))
+    hfile.attrs.create("fields", pr.fields, dtype=h5py.special_dtype(vlen=bytes))
     hfile.attrs["fnl_time"]=pr.fnl_time
     hfile.close()
 

@@ -17,7 +17,7 @@ def plot_vtk(freq_id,mode_id,input_file):
     #read attribution
     in_field = houtput.attrs["fields"].tolist()
     for i in range(0,len(in_field)):
-        in_field[i]=in_field[i].decode('ascii')
+        in_field[i]=in_field[i].decode('ascii') # bytes to string
 
     df = houtput.attrs["df"]
     print('St={}'.format(df*freq_id*D_n/Uj))
