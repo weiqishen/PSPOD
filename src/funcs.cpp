@@ -76,9 +76,3 @@ void CalculateSpectralPOD()
     pod.write_coord(sr.coord);
     cout << "done." << endl;
 }
-
-void CalculateAzimuthalSpectralPOD()
-{
-    //include calculation of azimuthal Fourier modes
-    //write results seperate by azimuthal modes
-}

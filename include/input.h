@@ -16,7 +16,6 @@ enum TASK
 {
   SNAPSHOT_POD = 0,
   SPECTRAL_POD = 1,
-  AZIMUTHAL_SPOD = 2,
 };
 
 enum COORD_SYS

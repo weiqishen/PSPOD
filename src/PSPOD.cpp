@@ -42,9 +42,6 @@ int main(int argc, char *argv[])
   case SPECTRAL_POD:
     CalculateSpectralPOD();
     break;
-  case AZIMUTHAL_SPOD:
-    CalculateAzimuthalSpectralPOD();
-    break;
   default:
     Fatal_Error("Feature not implemented");
   }

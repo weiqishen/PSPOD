@@ -78,14 +78,12 @@ void input::read_param(void)
     {
         pr.getScalarValue("write_mean", write_mean);
     }
-    else if (task == SPECTRAL_POD || task == AZIMUTHAL_SPOD)
+    else if (task == SPECTRAL_POD)
     {
         pr.getScalarValue("window", window);
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
         pr.getScalarValue("from_dump", from_dump, 0);
-        if (task == AZIMUTHAL_SPOD && coord_sys == CARTESIAN)
-            Fatal_Error("Azimuthal decomposed spectral POD only support cylindrical coordinate data.");
     }
     else
         Fatal_Error("Unsupported task!");

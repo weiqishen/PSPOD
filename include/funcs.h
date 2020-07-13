@@ -21,8 +21,3 @@ void CalculateSpatialPOD(void);
  * @brief calculate spectral pod
  */
 void CalculateSpectralPOD(void);
-
-/**
- * @brief calculate azimuthal decomposed spectral pod
- */
-void CalculateAzimuthalSpectralPOD(void);
