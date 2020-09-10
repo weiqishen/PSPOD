@@ -23,7 +23,7 @@ public:
 
   //computation methods
   virtual void calc_mode(void); //!<calculate mode from real_data using svd(real_data)
-  void calc_mean(void);         //!<calculate mean of real_data along axis=0
+  virtual void calc_mean(void);  //!<calculate mean of real_data along axis=0
   void subtract_mean(void);     //!<subtract mean from real_data along axis=0
   void calculateWeight(double *in_coord);  //!<calculate the quadrature weight array 
 

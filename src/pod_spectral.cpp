@@ -9,7 +9,7 @@
  * 
  */
 #include <numeric>
-#include "pod_specteal.h"
+#include "pod_spectral.h"
 #include "hdf5.h"
 #include <sys/stat.h>
 using namespace std;
@@ -31,20 +31,33 @@ pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_
         hann_sqr = pow(cblas_dnrm2(block_size, hann_array.get_ptr(), 1), 2);
     }
 }
+void pod_spectral::calc_mean()
+{
+    mean_data.setup({n_probe, run_input.fields_pod.get_len()});
+    mean_data = 0;
+
+    //average over all the 0 frequency component
+    for (size_t i = 0; i < fft_data.get_dim(0); i++)
+        for (size_t j = 0; j < n_realization; j++)
+            mean_data(i) += fft_data({i, j}).real();
+    cblas_dscal(mean_data.get_len(), 1. / sqrt(n_realization), mean_data.get_ptr(), 1);
+}
 
 void pod_spectral::calc_fft(size_t block_id)
 {
     //inplace transpose
     real_data.trans(); //time*space
+    
     //subtract mean
-    double temp_mean;
-    for (size_t i = 0; i < real_data.get_dim(1); i++)//loop over space
-    {
-        temp_mean = accumulate(real_data.get_ptr({0, i}), real_data.get_ptr({0, i + 1}), 0.);
-        temp_mean /= real_data.get_dim(0);
-        for (size_t j = 0; j < real_data.get_dim(0);j++)//loop over time
-            real_data({j, i}) -= temp_mean;
-    }
+    //double temp_mean;
+    //for (size_t i = 0; i < real_data.get_dim(1); i++)//loop over space
+    //{
+    //    temp_mean = accumulate(real_data.get_ptr({0, i}), real_data.get_ptr({0, i + 1}), 0.);
+    //    temp_mean /= real_data.get_dim(0);
+    //    for (size_t j = 0; j < real_data.get_dim(0);j++)//loop over time
+    //        real_data({j, i}) -= temp_mean;
+    //}
+
     //apply window
     if (run_input.window)
     {
@@ -98,18 +111,36 @@ void pod_spectral::calc_mode()
     create_result();
 
     //compute svd for each frequency
-    for (size_t i = 0; i < block_size / 2 + 1; i++)
+    for (freq_id = 0; freq_id < block_size / 2 + 1; freq_id++)
     {
-        freq_id = i;
-        cout << "calulating modes ... for freq: " << i + 1 << " of " << block_size / 2 + 1 << '\r' << flush;
+        cout << "calulating modes ... for freq: " << freq_id + 1 << " of " << block_size / 2 + 1 << '\r' << flush;
         //load fft from file
         load_fft();
+        //calculate mean
+        if (run_input.norm_pod == COMPRESSIBLE_ENERGY && freq_id == 0)
+            calc_mean();
 
         //multiply sqrt(w) matrix
-        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++) //loop over each field
-            for (size_t i = 0; i < n_probe; i++) //loop over each probe
-                cblas_zdscal(fft_data.get_dim(1), sqrt(w(i) * run_input.w_field(j)), fft_data.get_ptr({i + j * n_probe, 0}), fft_data.get_dim(0)); //rescale each row
-
+        if (run_input.norm_pod == COMPRESSIBLE_ENERGY)
+        {
+                for (size_t i = 0; i < run_input.fields_pod.get_len(); i++)//loop over each field
+                    for (size_t j = 0; j < n_probe; j++) //loop over each probe
+                {
+                    if (i == 0)
+                        cblas_zdscal(fft_data.get_dim(1), sqrt(mean_data({j, 4}) / (mean_data({j, 0}) * run_input.gamma * run_input.Mach * run_input.Mach) * w(j)), fft_data.get_ptr({j + i * n_probe, 0}), fft_data.get_dim(0)); //rescale
+                    else if (i == 4)
+                        cblas_zdscal(fft_data.get_dim(1), sqrt(mean_data({j, 0}) / (mean_data({j, 4}) * run_input.gamma * (run_input.gamma - 1) * run_input.Mach * run_input.Mach) * w(j)), fft_data.get_ptr({j + i * n_probe, 0}), fft_data.get_dim(0)); //rescale
+                    else
+                        cblas_zdscal(fft_data.get_dim(1), sqrt(mean_data({j, 0}) * w(j)), fft_data.get_ptr({j + i * n_probe, 0}), fft_data.get_dim(0)); //rescale
+                }
+        }
+        else
+        {
+            for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over each field
+                for (size_t j = 0; j < n_probe; j++) //loop over each probe
+                    cblas_zdscal(fft_data.get_dim(1), sqrt(w(j) * run_input.w_field(i)), fft_data.get_ptr({j + i * n_probe, 0}), fft_data.get_dim(0)); //rescale each row
+        }
+        
         //calc svd
         fft_temp = fft_data; //copy to temporary storage
         LAPACKE_zgesvd(LAPACK_COL_MAJOR, 'S', 'N', fft_data.get_dim(0), fft_data.get_dim(1),
@@ -120,10 +151,26 @@ void pod_spectral::calc_mode()
         cblas_zgemm(CblasColMajor, CblasConjTrans, CblasNoTrans, fft_temp.get_dim(1), U_spectral.get_dim(1), fft_temp.get_dim(0), &alpha, fft_temp.get_ptr(), fft_temp.get_dim(0), U_spectral.get_ptr(), U_spectral.get_dim(0), &beta, a_spectral.get_ptr(), a_spectral.get_dim(0));
 
         //multiply 1/sqrt(w) matrix
-        for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)//loop over each field
-            for (size_t i = 0; i < n_probe; i++)//loop over each probe
-                cblas_zdscal(U_spectral.get_dim(1), 1. / sqrt(w(i) * run_input.w_field(j)), U_spectral.get_ptr({i + j * n_probe, 0}), U_spectral.get_dim(0)); //rescale each row
-
+        if(run_input.norm_pod==COMPRESSIBLE_ENERGY)
+        {
+            for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over each field
+                for (size_t j = 0; j < n_probe; j++) //loop over each probe
+                {
+                    if (i == 0)
+                        cblas_zdscal(U_spectral.get_dim(1),1./( sqrt(mean_data({j, 4}) / (mean_data({j, 0}) * run_input.gamma * run_input.Mach * run_input.Mach) * w(j))), U_spectral.get_ptr({j + i * n_probe, 0}), U_spectral.get_dim(0)); //rescale
+                    else if (i == 4)
+                        cblas_zdscal(U_spectral.get_dim(1),1./( sqrt(mean_data({j, 0}) / (mean_data({j, 4}) * run_input.gamma * (run_input.gamma - 1) * run_input.Mach * run_input.Mach) * w(j))), U_spectral.get_ptr({j + i * n_probe, 0}), U_spectral.get_dim(0)); //rescale
+                    else
+                        cblas_zdscal(U_spectral.get_dim(1), 1./(sqrt(mean_data({j, 0}) * w(j))), U_spectral.get_ptr({j + i * n_probe, 0}), U_spectral.get_dim(0)); //rescale
+                }
+        }
+        else
+        {
+            for (size_t i = 0; i < run_input.fields_pod.get_len(); i++)//loop over each field
+                for (size_t j = 0; j < n_probe; j++)//loop over each probe
+                    cblas_zdscal(U_spectral.get_dim(1), 1. / sqrt(w(j) * run_input.w_field(i)), U_spectral.get_ptr({j + i * n_probe, 0}), U_spectral.get_dim(0)); //rescale each row
+        }
+ 
         vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
         write_results();
     }

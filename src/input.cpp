@@ -65,6 +65,17 @@ void input::read_param(void)
         fields_pod(3) = "w";
         w_field(3) = 1.;
     }
+    else if (norm_pod == COMPRESSIBLE_ENERGY)
+    {
+    pr.getScalarValue("R_gas", R_gas, 286.9);
+    pr.getScalarValue("Mach", Mach);
+        fields_pod.setup(5);
+        fields_pod(0) = "rho";
+        fields_pod(1) = "u";
+        fields_pod(2) = "v";
+        fields_pod(3) = "w";
+        fields_pod(4) = "T";
+    }
 
     pr.getScalarValue("coord_sys", coord_sys, int(CARTESIAN));
     if (coord_sys == CARTESIAN)

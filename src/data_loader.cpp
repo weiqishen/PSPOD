@@ -120,18 +120,16 @@ void data_loader::read_attr()
     {
         for (size_t j = 0; j < fields_data.get_len(); j++) //loop over the data fields
         {
-            if (run_input.fields_pod(i) == fields_data(j)) //found in the data file
+            if (run_input.fields_pod(i) == fields_data(j) || (run_input.norm_pod==COMPRESSIBLE_ENERGY&&run_input.fields_pod(i) == "T"&&fields_data(j)=="pressure")) //found in the data file
             {
                 field_data_id.push_back(j);
                 break;
             }
-            else
-            {
-                if (j == fields_data.get_len() - 1)
-                    Fatal_Error("Can't find the POD field in the data file!");
-            }
+            if (j == fields_data.get_len() - 1)
+                Fatal_Error("Can't find the POD field in the data file!");
         }
     }
+
     if (!is_sorted(field_data_id.begin(), field_data_id.end()))
         Fatal_Error("Field for POD should in the same order of field in data file!");
 
@@ -190,7 +188,7 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
                     out_data + dim[0]*dim[1] * i) < 0)
             Fatal_Error("Failed to read subset of data");
         
-        //calculate speed of sound if pod field has "a" or norm=2
+        //calculate speed of sound if norm=2
         if (run_input.norm_pod == SPECIFIC_TOTAL_ENTHALPY)
         {
             hid_t memspace_id2;
@@ -206,6 +204,12 @@ void data_loader::partial_load_data(size_t p_start, size_t n_p, size_t s_start, 
             for (size_t j = 0; j < n_p; j++)
                 out_data[j + dim[0] * dim[1] * i] = sqrt(run_input.gamma * temp_pressure(j) / out_data[j + dim[0] * dim[1] * i]);
             H5Sclose(memspace_id2);
+        }
+        else if (run_input.norm_pod == COMPRESSIBLE_ENERGY)
+        {
+            //calculate temperature from pressure and temperature
+            for (size_t j = 0; j < n_p; j++)
+                out_data[j  + (dim[0] - 1) * n_p+ dim[0] * dim[1] * i] /= out_data[j + dim[0] * dim[1] * i] * run_input.R_gas; //T=P/Rrho
         }
     }
     //close objects

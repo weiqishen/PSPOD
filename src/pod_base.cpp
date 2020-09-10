@@ -68,10 +68,25 @@ void pod_base::calc_mode()
     a.setup({real_data.get_dim(1), U.get_dim(1)});
 
     //multiply sqrt(w) matrix
-    for (size_t j = 0; j < run_input.fields_pod.get_len(); j++) //loop over each field
-        for (size_t i = 0; i < n_probe; i++) //loop over each probe
-            cblas_dscal(real_data.get_dim(1), sqrt(w(i) * run_input.w_field(j)), real_data.get_ptr({i + j * n_probe, 0}), real_data.get_dim(0)); //rescale each row
-
+    if(run_input.norm_pod==COMPRESSIBLE_ENERGY)
+    {
+        for (size_t i = 0; i < run_input.fields_pod.get_len(); i++)//loop over each field
+            for (size_t j = 0; j < n_probe; j++) //loop over each probe
+            {
+                if (i == 0)//rho
+                    cblas_dscal(real_data.get_dim(1), sqrt(mean_data({j, 4}) / (mean_data({j, 0}) * run_input.gamma * run_input.Mach * run_input.Mach) * w(j)), real_data.get_ptr({j + i * n_probe, 0}), real_data.get_dim(0)); //rescale
+                else if (i == 4)//T
+                    cblas_dscal(real_data.get_dim(1), sqrt(mean_data({j, 0}) / (mean_data({j, 4}) * run_input.gamma * (run_input.gamma - 1) * run_input.Mach * run_input.Mach) * w(j)), real_data.get_ptr({j + i * n_probe, 0}), real_data.get_dim(0)); //rescale
+                else//u,v,w
+                    cblas_dscal(real_data.get_dim(1), sqrt(mean_data({j, 0}) * w(j)), real_data.get_ptr({j + i * n_probe, 0}), real_data.get_dim(0)); //rescale
+            }
+    }
+    else
+    {
+    for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over each field
+        for (size_t j = 0; j < n_probe; j++) //loop over each probe
+            cblas_dscal(real_data.get_dim(1), sqrt(w(j) * run_input.w_field(i)), real_data.get_ptr({j + i * n_probe, 0}), real_data.get_dim(0)); //rescale each row
+    }
     //scale by sqrt(1/n_realization)
     cblas_dscal(real_data.get_len(), sqrt(1. / n_realization), real_data.get_ptr(), 1);
 
@@ -87,11 +102,27 @@ void pod_base::calc_mode()
     vdSqr(D.get_len(), D.get_ptr(), D.get_ptr());
     //calc coefficient X^T*U
     cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, temp_real.get_dim(1), U.get_dim(1), temp_real.get_dim(0), sqrt(n_realization), temp_real.get_ptr(), temp_real.get_dim(0), U.get_ptr(), U.get_dim(0), 0, a.get_ptr(), a.get_dim(0));
-    
+
     //multiply 1/sqrt(w) matrix
-    for (size_t j = 0; j < run_input.fields_pod.get_len(); j++)//loop over each field
-        for (size_t i = 0; i < n_probe; i++)//loop over each probe
-            cblas_dscal(U.get_dim(1), 1. / sqrt(w(i)*run_input.w_field(j)), U.get_ptr({i + j * n_probe, 0}), U.get_dim(0)); //rescale each row
+    if (run_input.norm_pod == COMPRESSIBLE_ENERGY)
+    {
+        for (size_t i = 0; i < run_input.fields_pod.get_len(); i++)
+            for (size_t j = 0; j < n_probe; j++) //loop over each probe
+            { //loop over each field
+                if (i == 0)//rho
+                    cblas_dscal(U.get_dim(1), 1. / (sqrt(mean_data({j, 4}) / (mean_data({j, 0}) * run_input.gamma * run_input.Mach * run_input.Mach) * w(j))), U.get_ptr({j + i * n_probe, 0}), U.get_dim(0)); //rescale
+                else if (i == 4)//T
+                    cblas_dscal(U.get_dim(1), 1. / (sqrt(mean_data({j, 0}) / (mean_data({j, 4}) * run_input.gamma * (run_input.gamma - 1) * run_input.Mach * run_input.Mach) * w(j))), U.get_ptr({j + i * n_probe, 0}), U.get_dim(0)); //rescale
+                else//u,v,w
+                    cblas_dscal(U.get_dim(1), 1. / (sqrt(mean_data({j, 0}) * w(j))), U.get_ptr({j + i * n_probe, 0}), U.get_dim(0)); //rescale
+            }
+    }
+    else
+    {
+        for (size_t i = 0; i < run_input.fields_pod.get_len(); i++) //loop over each field
+            for (size_t j = 0; j < n_probe; j++) //loop over each probe
+                cblas_dscal(U.get_dim(1), 1. / sqrt(w(j) * run_input.w_field(i)), U.get_ptr({j + i * n_probe, 0}), U.get_dim(0)); //rescale each row
+    }
 }
 
 void pod_base::write_results()

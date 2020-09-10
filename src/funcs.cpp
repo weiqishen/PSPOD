@@ -12,7 +12,7 @@
 #include "ndarray.h"
 #include "data_loader.h"
 #include "pod_base.h"
-#include "pod_specteal.h"
+#include "pod_spectral.h"
 
 using namespace std;
 
@@ -53,10 +53,10 @@ void CalculateSpectralPOD()
     n_blocks = (sr.n_snap_data - run_input.overlap) / (run_input.block_size - run_input.overlap); //calculate maximum number of blocks
     //initialize spectral pod
     pod_spectral pod(sr.n_probe_data, run_input.block_size, n_blocks, sr.dt);
-    //load snapshot one block at a time
-    sr.open_file();
     if (!run_input.from_dump) //calculate fft
     {
+        //load snapshot one block at a time
+        sr.open_file();
         for (size_t i = 0; i < n_blocks; i++)
         {
             cout << "Loading data... block " << i + 1 << " of " << n_blocks << "  \r" << flush;
@@ -64,8 +64,8 @@ void CalculateSpectralPOD()
             //calculate fft and store it in fft_data
             pod.calc_fft(i);
         }
+        sr.close_file();
     }
-    sr.close_file();
     cout << endl;
     //calculate modes
     pod.calculateWeight(sr.coord.get_ptr());

@@ -1,5 +1,5 @@
 /**
- * @file pod_specteal.h
+ * @file pod_spectral.h
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -17,6 +17,7 @@ public:
   ~pod_spectral() = default;
   pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_blocks, double in_dt);
 
+  void calc_mean(); //!<average the summation data
   void calc_fft(size_t block_id); //!<calculate fft of real_data(time*space)
   void dump_fft(size_t block_id);
   void load_fft();

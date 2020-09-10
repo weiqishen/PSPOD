@@ -29,6 +29,7 @@ enum NORM_TYPE
   DEFAULT = 0,
   SPECIFIC_KINETIC_ENERGY = 1,
   SPECIFIC_TOTAL_ENTHALPY = 2,
+  COMPRESSIBLE_ENERGY = 3,
 };
 
 class input
@@ -71,8 +72,8 @@ public:
   ndarray<string> fields_pod; //!< fields need to perform pod
   int norm_pod;               //!< type of norm to perform pod. 0[default]-manually specify fields; 1-specific kinetic energy; 2-specific total enthalpy
   ndarray<double> w_field;    //!<weight for each pod field variable
-  int coord_sys;               //!< coordinated system 0: cartesian; 1: cylindrical
-  double gamma;               //ratio of specific heat
+  int coord_sys;              //!< coordinated system 0: cartesian; 1: cylindrical
+  double gamma,R_gas,Mach;    //!< ratio of specific heat, gas const, Ref Mach
   //Snapshot POD
   int write_mean; //!< if write mean data to output
   //Spectral POD
