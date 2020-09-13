@@ -67,8 +67,8 @@ void input::read_param(void)
     }
     else if (norm_pod == COMPRESSIBLE_ENERGY)
     {
-    pr.getScalarValue("R_gas", R_gas, 286.9);
-    pr.getScalarValue("Mach", Mach);
+        pr.getScalarValue("R_gas", R_gas, 286.9);
+        pr.getScalarValue("Mach", Mach);
         fields_pod.setup(5);
         fields_pod(0) = "rho";
         fields_pod(1) = "u";
@@ -95,6 +95,8 @@ void input::read_param(void)
         pr.getScalarValue("overlap", overlap);
         pr.getScalarValue("block_size", block_size);
         pr.getScalarValue("from_dump", from_dump, 0);
+        if (norm_pod == COMPRESSIBLE_ENERGY && from_dump)
+            Fatal_Error("Cannot use from_dumped when calculating compressible energy norm");
     }
     else
         Fatal_Error("Unsupported task!");

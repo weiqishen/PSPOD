@@ -62,6 +62,8 @@ void CalculateSpectralPOD()
             cout << "Loading data... block " << i + 1 << " of " << n_blocks << "  \r" << flush;
             sr.partial_load_data(0, pod.n_probe, i * (pod.block_size - run_input.overlap), pod.block_size, pod.real_data.get_ptr());
             //calculate fft and store it in fft_data
+            pod.calc_mean();
+            pod.subtract_mean();
             pod.calc_fft(i);
         }
         sr.close_file();

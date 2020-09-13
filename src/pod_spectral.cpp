@@ -31,32 +31,11 @@ pod_spectral::pod_spectral(size_t in_n_probe, size_t in_block_size, size_t in_n_
         hann_sqr = pow(cblas_dnrm2(block_size, hann_array.get_ptr(), 1), 2);
     }
 }
-void pod_spectral::calc_mean()
-{
-    mean_data.setup({n_probe, run_input.fields_pod.get_len()});
-    mean_data = 0;
-
-    //average over all the 0 frequency component
-    for (size_t i = 0; i < fft_data.get_dim(0); i++)
-        for (size_t j = 0; j < n_realization; j++)
-            mean_data(i) += fft_data({i, j}).real();
-    cblas_dscal(mean_data.get_len(), 1. / sqrt(n_realization), mean_data.get_ptr(), 1);
-}
 
 void pod_spectral::calc_fft(size_t block_id)
 {
     //inplace transpose
     real_data.trans(); //time*space
-    
-    //subtract mean
-    //double temp_mean;
-    //for (size_t i = 0; i < real_data.get_dim(1); i++)//loop over space
-    //{
-    //    temp_mean = accumulate(real_data.get_ptr({0, i}), real_data.get_ptr({0, i + 1}), 0.);
-    //    temp_mean /= real_data.get_dim(0);
-    //    for (size_t j = 0; j < real_data.get_dim(0);j++)//loop over time
-    //        real_data({j, i}) -= temp_mean;
-    //}
 
     //apply window
     if (run_input.window)
@@ -110,15 +89,14 @@ void pod_spectral::calc_mode()
     //create result file
     create_result();
 
+    if (run_input.norm_pod == COMPRESSIBLE_ENERGY)
+        mean_data.reshape({n_probe, run_input.fields_pod.get_len()});
     //compute svd for each frequency
     for (freq_id = 0; freq_id < block_size / 2 + 1; freq_id++)
     {
         cout << "calulating modes ... for freq: " << freq_id + 1 << " of " << block_size / 2 + 1 << '\r' << flush;
         //load fft from file
         load_fft();
-        //calculate mean
-        if (run_input.norm_pod == COMPRESSIBLE_ENERGY && freq_id == 0)
-            calc_mean();
 
         //multiply sqrt(w) matrix
         if (run_input.norm_pod == COMPRESSIBLE_ENERGY)
